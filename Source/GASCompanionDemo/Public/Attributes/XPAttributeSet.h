@@ -21,7 +21,7 @@ public:
     virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
     virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
     virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+        
     UPROPERTY(BlueprintReadOnly, Category = "XP", ReplicatedUsing = OnRep_CurrentXP)
     FGameplayAttributeData CurrentXP = 0.0;
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, CurrentXP)    
@@ -34,9 +34,6 @@ public:
     FGameplayAttributeData Level = 0.0;
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, Level)    
 
-	UPROPERTY(BlueprintReadOnly,ReplicatedUsing=OnRep_xp)
-	FGameplayAttributeData xp=100;
-	ATTRIBUTE_ACCESSORS(UXPAttributeSet, xp);
 protected:
     
     UFUNCTION()
@@ -47,7 +44,4 @@ protected:
 
     UFUNCTION()
     virtual void OnRep_Level(const FGameplayAttributeData& OldLevel);
-
-	UFUNCTION()
-	virtual void OnRep_xp(const FGameplayAttributeData& OldXp);
 };

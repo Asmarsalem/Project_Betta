@@ -10,7 +10,7 @@
 #include "Components/TimelineComponent.h"
 float timeLinePreviousValue;
 bool reverse;
-void AGM_TestGameMood::startNewWave(UCurveFloat* CurveFloat,bool IsLooping)
+void AGM_TestGameMood::startNewWave(UCurveFloat* CurveFloat)
 {
 	reverse=false;
 	timeLinePreviousValue=0.f;
@@ -34,7 +34,6 @@ void AGM_TestGameMood::startNewWave(UCurveFloat* CurveFloat,bool IsLooping)
 	MyTimeline->SetTimelineFinishedFunc(FTimeLine);
   
 	// Start The Time Line 
-	MyTimeline->SetLooping(IsLooping);
 	MyTimeline->RegisterComponent();
 	MyTimeline->PlayFromStart();
 
