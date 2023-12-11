@@ -3,6 +3,7 @@
 
 #include "Attributes/XPAttributeSet.h"
 #include "GameplayEffectExtension.h"
+#include "Core/GameMode/GM_TestGameMood.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -23,7 +24,12 @@ void UXPAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallback
 
 	FGSCAttributeSetExecutionData ExecutionData;
 	GetExecutionDataFromMod(Data, ExecutionData);
-    Data.EvaluatedData.Attribute.GetName();
+    
+
+ 
+
+
+    
 	AActor* SourceActor = ExecutionData.SourceActor;
 	AActor* TargetActor = ExecutionData.TargetActor;
    
@@ -46,6 +52,21 @@ void UXPAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet, Level, COND_None, REPNOTIFY_Always);
 
     DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet,xp,COND_None,REPNOTIFY_Always);
+}
+
+void UXPAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+    Super::PostAttributeChange(Attribute, OldValue, NewValue);
+    if (Attribute.GetNumericValue(this)>=GetNextLevelXPThreshold()&&Attribute==GetCurrentXPAttribute())
+    {
+        SetNextLevelXPThreshold(GetNextLevelXPThreshold()*2);
+        UE_LOG(LogTemp,Error,TEXT("LevelUP"));
+        SetLevel(GetLevel()+1);
+        if(AGM_TestGameMood* Gamemode=Cast<AGM_TestGameMood>(GetOwningActor()))
+        {
+            Gamemode->onAttributeChange.Broadcast(GetCurrentXP(),GetNextLevelXPThreshold(),GetLevel());
+        }
+    }
 }
 
 void UXPAttributeSet::OnRep_CurrentXP(const FGameplayAttributeData& OldCurrentXP)
