@@ -34,7 +34,7 @@ void UMainAttributes::PostGameplayEffectExecute(const FGameplayEffectModCallback
 
     FGSCAttributeSetExecutionData ExecutionData;
     GetExecutionDataFromMod(Data, ExecutionData);
-
+    
     // Set clamping or handling or "meta" attributes here (like damages)
 
     // Example 1: Using helpers to handle each attribute in their own methods (See GSCAttributeSet.cpp)

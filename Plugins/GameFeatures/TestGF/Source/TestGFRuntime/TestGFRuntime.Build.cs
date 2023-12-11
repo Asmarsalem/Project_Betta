@@ -25,7 +25,7 @@ public class TestGFRuntime : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core", "GameplayAbilities",
+				"Core", "GameplayAbilities", "GASCompanion","GameplayTags"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
