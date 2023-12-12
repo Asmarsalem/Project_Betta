@@ -2,8 +2,7 @@
 
 
 #include "Core/GameInstance/Gi_TopDownShooter_GameInstance.h"
-#include "PlayFab/Classes/PlayFabClientModels.h"
-#include "PlayFab/Classes/PlayFabClientAPI.h"
+
 
 void UGi_TopDownShooter_GameInstance::Login()
 {

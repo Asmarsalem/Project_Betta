@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+ #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Gi_TopDownShooter_GameInstance.generated.h"
 
@@ -17,4 +17,4 @@ public:
 	UFUNCTION(BlueprintCallable,Category="PlayFab_Login")
 	void Login();
 	
-};
+};  
