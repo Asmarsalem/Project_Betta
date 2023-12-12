@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "5.3.2+5.1",
+	"VersionName": "6.0.0+5.1",
 	"FriendlyName": "GAS Companion",
 	"Description": "Leveraging the power of the Gameplay Ability System, this plugin provides a starting template and a robust foundation to speed up the creation and development of GAS based projects.",
 	"Category": "Gameplay",
