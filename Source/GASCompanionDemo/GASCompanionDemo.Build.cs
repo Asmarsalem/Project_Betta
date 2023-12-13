@@ -8,14 +8,14 @@ public class GASCompanionDemo : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","GASCompanion","TestGFRuntime"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","GASCompanion","TestGFRuntime","PlayFab"});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"GASCompanion",
 			"GameplayTags",
 			"GameplayAbilities",
-			"PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime"
+			"PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime","HTTP"
 		});
 		// Here is where you should set these flags
 		bUseAVX = true;
