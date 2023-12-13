@@ -10,6 +10,8 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAttributeChangeSignature,float,CurrentXp,float,MaxXP,float,Level);
+
 UCLASS()
 class GASCOMPANIONDEMO_API AGM_TestGameMood : public AGameMode
 {
@@ -28,5 +30,7 @@ public:
 	void onTimeLineFinished();
 	UFUNCTION(BlueprintImplementableEvent,Category="WaveSystem")
 	void OnTimelineEvent(float value);
-	
+	UPROPERTY(BlueprintAssignable)
+	FAttributeChangeSignature onAttributeChange;
+
 };
