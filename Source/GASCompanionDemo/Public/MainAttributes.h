@@ -103,10 +103,22 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Secondary", ReplicatedUsing = OnRep_WaveLevel)
 	FGameplayAttributeData WaveLevel = 0.0;
-	ATTRIBUTE_ACCESSORS(UMainAttributes, WaveLevel) 
+	ATTRIBUTE_ACCESSORS(UMainAttributes, WaveLevel)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Secondary", ReplicatedUsing = OnRep_Gold)
+	FGameplayAttributeData Gold = 0.0;
+	ATTRIBUTE_ACCESSORS(UMainAttributes, Gold)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Secondary", ReplicatedUsing = OnRep_Gems)
+	FGameplayAttributeData Gems = 0.0;
+	ATTRIBUTE_ACCESSORS(UMainAttributes, Gems)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Vital", ReplicatedUsing = OnRep_KnockBack)
+	FGameplayAttributeData KnockBack = 0.0;
+	ATTRIBUTE_ACCESSORS(UMainAttributes, KnockBack)    
+
 	
-	 
-    
+	
 
 protected:
 	
@@ -172,6 +184,14 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_WaveLevel(const FGameplayAttributeData& OldWaveLevel);
-	
+
+	UFUNCTION()
+	virtual void OnRep_Gold(const FGameplayAttributeData& OldGold);
+
+	UFUNCTION()
+	virtual void OnRep_Gems(const FGameplayAttributeData& OldGems);
+
+	UFUNCTION()
+	virtual void OnRep_KnockBack(const FGameplayAttributeData& OldKnockBack);
 	
 };
