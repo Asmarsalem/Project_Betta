@@ -25,7 +25,11 @@ void AAICharacterBase::BeginPlay()
 
 }
 
-
+// Called every frame
+void AAICharacterBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
 void AAICharacterBase::OnHealthChange(const FOnAttributeChangeData& Data)const
 {
 	UE_LOG(LogTemp, Error, TEXT("Killed"));
@@ -44,5 +48,9 @@ void AAICharacterBase::InitAb( UGSCAbilitySystemComponent* GSCAbilitySystem)
 	}
 }
 
-
+// Called to bind functionality to input
+void AAICharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
 

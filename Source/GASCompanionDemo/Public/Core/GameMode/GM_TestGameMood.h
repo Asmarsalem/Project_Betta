@@ -6,10 +6,12 @@
 #include "GameFramework/GameMode.h"
 #include "Components/TimelineComponent.h"
 #include "GM_TestGameMood.generated.h"
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAttributeChangeSignature,float,CurrentXp,float,MaxXP,float,Level);
+
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FAttributeChangeSignature,float,CurrentXp,float,MaxXP,float,Level);
+
 UCLASS()
 class GASCOMPANIONDEMO_API AGM_TestGameMood : public AGameMode
 {
@@ -20,7 +22,7 @@ public:
 	
 	// Wave System
 	UFUNCTION(BlueprintCallable,Category="WaveSystem",meta=(Tooltip="Start New Wave Based On Curve Float"))
-	void startNewWave(UCurveFloat* CurveFloat,bool IsLooping);
+	void startNewWave(UCurveFloat* CurveFloat);
 	// Blue Print Implementable Funcs
 	UFUNCTION()
 	void onFloatTrackUpdate(float value);
@@ -30,5 +32,5 @@ public:
 	void OnTimelineEvent(float value);
 	UPROPERTY(BlueprintAssignable)
 	FAttributeChangeSignature onAttributeChange;
-	
+
 };

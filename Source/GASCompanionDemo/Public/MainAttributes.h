@@ -113,6 +113,10 @@ public:
 	FGameplayAttributeData Gems = 0.0;
 	ATTRIBUTE_ACCESSORS(UMainAttributes, Gems)
 
+	UPROPERTY(BlueprintReadOnly, Category = "Vital", ReplicatedUsing = OnRep_KnockBack)
+	FGameplayAttributeData KnockBack = 0.0;
+	ATTRIBUTE_ACCESSORS(UMainAttributes, KnockBack)    
+
 	
 	
 
@@ -186,5 +190,8 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_Gems(const FGameplayAttributeData& OldGems);
+
+	UFUNCTION()
+	virtual void OnRep_KnockBack(const FGameplayAttributeData& OldKnockBack);
 	
 };
