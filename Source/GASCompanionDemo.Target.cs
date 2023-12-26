@@ -11,5 +11,11 @@ public class GASCompanionDemoTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 
 		ExtraModuleNames.AddRange( new string[] { "GASCompanionDemo" } );
+
+		if (Target.Platform == UnrealTargetPlatform.Android)
+		{
+			ExtraModuleNames.AddRange(new string[] { "OnlineSubsystem", "OnlineSubsystemGooglePlay", "AndroidAdvertising" });
+		}
+
 	}
 }
