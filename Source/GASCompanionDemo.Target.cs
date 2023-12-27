@@ -12,10 +12,7 @@ public class GASCompanionDemoTarget : TargetRules
 
 		ExtraModuleNames.AddRange( new string[] { "GASCompanionDemo" } );
 
-		if (Target.Platform == UnrealTargetPlatform.Android)
-		{
-			ExtraModuleNames.AddRange(new string[] { "OnlineSubsystem", "OnlineSubsystemGooglePlay", "AndroidAdvertising" });
-		}
+		
 
 	}
 }
