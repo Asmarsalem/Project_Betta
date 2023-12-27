@@ -40,6 +40,7 @@ void UGi_TopDownShooter_GameInstance::OnLoginFailure(FPlayFabError error, UObjec
 FString UGi_TopDownShooter_GameInstance::GetWindowsDeviceID()
 {
 	
+	/*
 	if (!PLATFORM_WINDOWS)
 	{
 		return TEXT("");
@@ -56,6 +57,7 @@ FString UGi_TopDownShooter_GameInstance::GetWindowsDeviceID()
 	{
 		return FString::Printf(TEXT("%lu"), VolumeSerialNumber);
 	}
+	*/
 
 	return TEXT("");
 
