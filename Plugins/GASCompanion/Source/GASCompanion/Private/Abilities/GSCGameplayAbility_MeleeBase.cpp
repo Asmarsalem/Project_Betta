@@ -7,6 +7,7 @@
 #include "Abilities/GSCBlueprintFunctionLibrary.h"
 #include "Abilities/Tasks/GSCTask_PlayMontageWaitForEvent.h"
 #include "Attributes/XPAttributeSet.h"
+
 #include "Components/GSCComboManagerComponent.h"
 
 UGSCGameplayAbility_MeleeBase::UGSCGameplayAbility_MeleeBase()
