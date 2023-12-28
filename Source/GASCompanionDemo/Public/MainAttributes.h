@@ -113,9 +113,13 @@ public:
 	FGameplayAttributeData Gems = 0.0;
 	ATTRIBUTE_ACCESSORS(UMainAttributes, Gems)
 
-	UPROPERTY(BlueprintReadOnly, Category = "Vital", ReplicatedUsing = OnRep_KnockBack)
+	UPROPERTY(BlueprintReadOnly, Category = "Secondary", ReplicatedUsing = OnRep_KnockBack)
 	FGameplayAttributeData KnockBack = 0.0;
-	ATTRIBUTE_ACCESSORS(UMainAttributes, KnockBack)    
+	ATTRIBUTE_ACCESSORS(UMainAttributes, KnockBack)
+
+	UPROPERTY(BlueprintReadOnly, Category = "Secondary", ReplicatedUsing = OnRep_HealthRegenTime)
+	FGameplayAttributeData HealthRegenTime = 0.0;
+	ATTRIBUTE_ACCESSORS(UMainAttributes, HealthRegenTime)    
 
 	
 	
@@ -193,5 +197,8 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_KnockBack(const FGameplayAttributeData& OldKnockBack);
+
+	UFUNCTION()
+	virtual void OnRep_HealthRegenTime(const FGameplayAttributeData& OldHealthRegenTime);
 	
 };
