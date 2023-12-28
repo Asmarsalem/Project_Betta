@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "521898336315",
+    "project_id": "bettatest2-27939",
+    "storage_bucket": "bettatest2-27939.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:521898336315:android:c775211ca6a63c1f1ebc1e",
+        "android_client_info": {
+          "package_name": "com.YourCompany.BettaTest2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCC0YvNKzePgmUZjM42fuIOnaZl6KJMkzQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      },
+      "admob_app_id": "ca-app-pub-9172535445214914~9516532400"
+    }
+  ],
+  "configuration_version": "1"
+}
