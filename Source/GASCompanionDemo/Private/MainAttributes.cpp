@@ -103,8 +103,8 @@ void UMainAttributes::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME_CONDITION_NOTIFY(UMainAttributes,Gems,COND_None,REPNOTIFY_Always)
 
     DOREPLIFETIME_CONDITION_NOTIFY(UMainAttributes,KnockBack,COND_None,REPNOTIFY_Always)
-    
-    
+
+    DOREPLIFETIME_CONDITION_NOTIFY(UMainAttributes,HealthRegenTime,COND_None,REPNOTIFY_Always)
     
     
 }
@@ -227,6 +227,13 @@ void UMainAttributes::OnRep_KnockBack(const FGameplayAttributeData& OldKnockBack
 {
     GAMEPLAYATTRIBUTE_REPNOTIFY(UMainAttributes,KnockBack,OldKnockBack)
 }
+
+ void UMainAttributes::OnRep_HealthRegenTime(const FGameplayAttributeData& OldHealthRegenTime)
+ {
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UMainAttributes,HealthRegenTime,OldHealthRegenTime)
+ }
+
+
 
 
 

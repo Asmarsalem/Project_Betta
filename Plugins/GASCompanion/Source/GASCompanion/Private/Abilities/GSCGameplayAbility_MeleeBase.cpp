@@ -3,8 +3,11 @@
 
 #include "Abilities/GSCGameplayAbility_MeleeBase.h"
 
+#include "AbilitySystemComponent.h"
 #include "Abilities/GSCBlueprintFunctionLibrary.h"
 #include "Abilities/Tasks/GSCTask_PlayMontageWaitForEvent.h"
+#include "Attributes/XPAttributeSet.h"
+
 #include "Components/GSCComboManagerComponent.h"
 
 UGSCGameplayAbility_MeleeBase::UGSCGameplayAbility_MeleeBase()
@@ -13,12 +16,18 @@ UGSCGameplayAbility_MeleeBase::UGSCGameplayAbility_MeleeBase()
 
 void UGSCGameplayAbility_MeleeBase::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
+	UAbilitySystemComponent* Ability = CurrentActorInfo->AbilitySystemComponent.Get();
+	
+	float RateLevel=Ability->GetNumericAttribute(UXPAttributeSet::GetAttackSpeedLevelAttribute());
+	
+	/*float RateRef =Ability->GetNumericAttribute(UXPAttributeSet::GetAttackSpeedLevelAttribute());*/
+	
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-
+	
 	AActor* AvatarActor = GetAvatarActorFromActorInfo();
 	if (!AvatarActor)
 	{
@@ -37,7 +46,7 @@ void UGSCGameplayAbility_MeleeBase::ActivateAbility(const FGameplayAbilitySpecHa
 
 	UAnimMontage* Montage = GetNextComboMontage();
 
-	UGSCTask_PlayMontageWaitForEvent* Task = UGSCTask_PlayMontageWaitForEvent::PlayMontageAndWaitForEvent(this, NAME_None, Montage, WaitForEventTag, Rate, NAME_None, true, 1.0f);
+	UGSCTask_PlayMontageWaitForEvent* Task = UGSCTask_PlayMontageWaitForEvent::PlayMontageAndWaitForEvent(this, NAME_None, Montage, WaitForEventTag, RateLevel, NAME_None, true, 1.0f);
 	Task->OnBlendOut.AddDynamic(this, &UGSCGameplayAbility_MeleeBase::OnMontageCompleted);
 	Task->OnCompleted.AddDynamic(this, &UGSCGameplayAbility_MeleeBase::OnMontageCompleted);
 	Task->OnInterrupted.AddDynamic(this, &UGSCGameplayAbility_MeleeBase::OnMontageCancelled);

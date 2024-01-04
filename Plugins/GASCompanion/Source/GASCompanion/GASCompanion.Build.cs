@@ -31,7 +31,8 @@ public class GASCompanion : ModuleRules
 			"SlateCore",
 			"DeveloperSettings",
 			"ModularGameplay",
-			"NetCore" // For OSx
+			"NetCore",
+			"GASCompanionDemo" // For OSx
 		});
 
 		if (Target.bBuildEditor == true)
