@@ -243,7 +243,7 @@
 	  			<addAttribute
 	  			    tag="$AdMobAppId"
 	  			    name="android:value"
-	  			    value="ca-app-pub-9172535445214914~9516532400" />
+	  			    value="ca-app-pub-3940256099942544~3347511713" />
 	  
 	  			<addElement
 	  			    tag="application"
