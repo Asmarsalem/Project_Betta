@@ -5,6 +5,8 @@
 #include "FirebaseFeatures.h"
 
 #include "Async/Async.h"
+#include "Misc/Paths.h"
+#include "Misc/FileHelper.h"
 
 #if WITH_FIREBASE_STORAGE
 THIRD_PARTY_INCLUDES_START
@@ -973,6 +975,34 @@ void UFirebaseStorageReference::PutFile
 		}
 	});
 #endif
+}
+
+void UFirebaseStorageReference::PutFileUFS
+(
+	const FString& Path,
+	const FFirebaseStorageMetadata& Metadata,
+	FFirebaseStorageController& Controller,
+	const FFirebaseStorageMetadataCallback& OnUploadOver,
+	const FFirebaseStorageControllerCallback& OnProgress,
+	const FFirebaseStorageControllerCallback& OnPaused
+)
+{
+	if (!FPaths::FileExists(Path))
+	{
+		UE_LOG(LogFirebaseStorage, Error, TEXT("File \"%s\" doesn't exist."), *Path);
+		OnUploadOver.ExecuteIfBound(EFirebaseStorageError::FileNotFound, {});
+		return;
+	}
+
+	TArray64<uint8> Data;
+	if (!FFileHelper::LoadFileToArray(Data, *Path))
+	{
+		UE_LOG(LogFirebaseStorage, Error, TEXT("Failed to load file \"%s\"."), *Path);
+		OnUploadOver.ExecuteIfBound(EFirebaseStorageError::FileNotFound, {});
+		return;
+	}
+
+	PutBytes(Data, Controller, OnUploadOver, OnProgress, OnPaused);
 }
 
 bool UFirebaseStorageReference::IsValid() const

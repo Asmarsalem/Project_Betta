@@ -180,7 +180,7 @@ public:
 	firebase::firestore::DocumentReference* GetInternal() const;
 
 private:
-	TUniquePtr<firebase::firestore::DocumentReference> Reference;
+	TSharedPtr<firebase::firestore::DocumentReference, ESPMode::ThreadSafe> Reference;
 };
 
 

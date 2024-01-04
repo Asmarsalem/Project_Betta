@@ -2,8 +2,9 @@
 
 #include "AdMobHelper.h"
 
+#if WITH_FIREBASE_ADMOB
 
-#if FIREBASE_VERSION_MAJOR >= 9 && WITH_FIREBASE_ADMOB
+#if FIREBASE_VERSION_MAJOR >= 9
 firebase::gma::AdRequest FAdMobHelper::CreateRequest(const FAdMobAdRequest& InReq)
 {
 	firebase::gma::AdRequest RawReq;
@@ -20,15 +21,18 @@ FAdMobHelper::FInitAdRequestMemoryHandler::FInitAdRequestMemoryHandler(const FAd
 {
 	FMemory::Memzero(&RawReq, sizeof(FFirebaseAdRequest));
 
+#if FIREBASE_VERSION_MAJOR < 9
 	RawReq.birthday_day			= InReq.BirthdayDay;
 	RawReq.birthday_month		= InReq.BirthdayMonth;
 	RawReq.birthday_year		= InReq.BirthdayYear;
-	RawReq.extras_count			= InReq.Extras.Num();
-	RawReq.keyword_count		= InReq.Keywords.Num();
-	RawReq.test_device_id_count	= InReq.TestDeviceIds.Num();
-	RawReq.gender				= static_cast<firebase::admob::Gender>(InReq.Gender);
+	RawReq.extras_count = InReq.Extras.Num();
+	RawReq.keyword_count = InReq.Keywords.Num();
+	RawReq.test_device_id_count = InReq.TestDeviceIds.Num();
+	RawReq.gender = static_cast<firebase::admob::Gender>(InReq.Gender);
+#endif
 
-	if (RawReq.test_device_id_count > 0)
+#if FIREBASE_VERSION_MAJOR < 9
+	if (InReq.TestDeviceIds.Num() > 0)
 	{
 		RawReq.test_device_ids = (const char**)FMemory::Malloc(RawReq.test_device_id_count * sizeof(const char*));
 
@@ -46,21 +50,30 @@ FAdMobHelper::FInitAdRequestMemoryHandler::FInitAdRequestMemoryHandler(const FAd
 			RawReq.test_device_ids[i] = DeviceIdStr;
 		}
 	}
+#endif
 
-	if (RawReq.keyword_count > 0)
+	if (InReq.Keywords.Num() > 0)
 	{
-		RawReq.keywords = (const char**)FMemory::Malloc(RawReq.keyword_count * sizeof(const char*));
-		Keywords.Reserve(RawReq.keyword_count);
+#if FIREBASE_VERSION_MAJOR < 9
+		RawReq.keywords = (const char**)FMemory::Malloc(InReq.Keywords.Num() * sizeof(const char*));
+		Keywords.Reserve(InReq.Keywords.Num());
+#endif
 
-		for (uint32 i = 0; i < RawReq.keyword_count; ++i)
+		for (int32 i = 0; i < InReq.Keywords.Num(); ++i)
 		{		
-			RawReq.keywords[i] = Keywords.Emplace_GetRef(TCHAR_TO_UTF8(*Req.Keywords[i])).c_str();
+			const char* const Keyword = Keywords.Emplace_GetRef(TCHAR_TO_UTF8(*Req.Keywords[i])).c_str();
+#if FIREBASE_VERSION_MAJOR < 9
+			RawReq.keywords[i] = Keyword;
+#else
+			RawReq.add_keyword(Keyword); 
+#endif
 		}
 	}
 	
+#if FIREBASE_VERSION_MAJOR < 9
 	using FFirebaseKeyValuePair = firebase::admob::KeyValuePair;
 
-	if (RawReq.extras_count > 0) 
+	if (InReq.Extras.Num() > 0)
 	{
 		RawReq.extras = (const FFirebaseKeyValuePair*) FMemory::Malloc(RawReq.extras_count * sizeof(const FFirebaseKeyValuePair));
 		int32 i = 0;
@@ -84,10 +97,12 @@ FAdMobHelper::FInitAdRequestMemoryHandler::FInitAdRequestMemoryHandler(const FAd
 			++i;
 		}
 	}
+#endif
 }
 
 FAdMobHelper::FInitAdRequestMemoryHandler::~FInitAdRequestMemoryHandler()
 {
+#if FIREBASE_VERSION_MAJOR < 9
 	for (uint32 i = 0; i < RawReq.test_device_id_count; ++i)
 	{
 		FMemory::Free((void*)RawReq.test_device_ids[i]);
@@ -108,6 +123,7 @@ FAdMobHelper::FInitAdRequestMemoryHandler::~FInitAdRequestMemoryHandler()
 		}
 		FMemory::Free((void*)RawReq.extras);
 	}
+#endif
 }
 
 const FFirebaseAdRequest& FAdMobHelper::FInitAdRequestMemoryHandler::Get()
@@ -117,17 +133,18 @@ const FFirebaseAdRequest& FAdMobHelper::FInitAdRequestMemoryHandler::Get()
 
 void* FAdMobHelper::GetAdParent()
 {
+	void* View = nullptr;
+
 #if WITH_FIREBASE_ADMOB
 #if PLATFORM_ANDROID
-	return static_cast<firebase::admob::AdParent>(FJavaWrapper::GameActivityThis);
+	View = (void*)(FJavaWrapper::GameActivityThis);
 #elif PLATFORM_IOS
-	FIOSView* View = [IOSAppDelegate GetDelegate].IOSView;
-	return static_cast<firebase::admob::AdParent>(View);
-#else
-	return nullptr;
+	View = (void*)([IOSAppDelegate GetDelegate].IOSView);
 #endif
-#else
-	return nullptr;
 #endif
+
+	return View;
 }
+
+#endif
 

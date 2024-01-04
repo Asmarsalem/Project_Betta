@@ -20,7 +20,7 @@ UFirestoreDocumentReference::UFirestoreDocumentReference(FVTableHelper& Helper) 
 
 UFirestoreDocumentReference::UFirestoreDocumentReference() : Super()
 #if WITH_FIREBASE_FIRESTORE
-	, Reference(MakeUnique<firebase::firestore::DocumentReference>())
+	, Reference(MakeShared<firebase::firestore::DocumentReference>())
 #endif
 {
 }
@@ -77,17 +77,13 @@ void UFirestoreDocumentReference::Get(EFirestoreSource Source, FDocumentSnapshot
 
 	using FNativeDocumentReference = firebase::firestore::DocumentReference;
 
-	// Makes a shallow copy of the reference, deleting it only once the operation
-	// is over to make sure it outlives the call.
-	FNativeDocumentReference* const Copy = new FNativeDocumentReference(*Reference);
-
-	Copy->Get((firebase::firestore::Source)Source).OnCompletion
-	([Copy, Callback = MoveTemp(Callback)](const firebase::Future<firebase::firestore::DocumentSnapshot>& Future) mutable -> void
+	Reference->Get((firebase::firestore::Source)Source).OnCompletion
+	([Copy = Reference, Callback = MoveTemp(Callback)](const firebase::Future<firebase::firestore::DocumentSnapshot>& Future) mutable -> void
 	{
 		const EFirestoreError Error = (EFirestoreError) Future.error();
 		if (Error != EFirestoreError::Ok)
 		{
-			UE_LOG(LogFirestore, Error, TEXT("Failed to get document Reference-> Code: %d. Message: %s"),
+			UE_LOG(LogFirestore, Error, TEXT("Failed to get document Code: %d. Message: %s"),
 				Error, UTF8_TO_TCHAR(Future.error_message()));
 		}
 
@@ -95,12 +91,11 @@ void UFirestoreDocumentReference::Get(EFirestoreSource Source, FDocumentSnapshot
 		{
 			firebase::firestore::DocumentSnapshot Snap = 
 				Future.result() ? *Future.result() : firebase::firestore::DocumentSnapshot();
-			AsyncTask(ENamedThreads::GameThread, [Copy, Callback = MoveTemp(Callback), Error, Snap = MoveTemp(Snap)]()mutable -> void
+			AsyncTask(ENamedThreads::GameThread, [Callback = MoveTemp(Callback), Error, Snap = MoveTemp(Snap)]() mutable -> void
 			{
 				FFirestoreDocumentSnapshot Snapshot;
 				Snapshot.Snapshot = MoveTemp(Snap);
 				Callback.ExecuteIfBound(Error, Snapshot);
-				delete Copy;
 			});
 		}
 	});
@@ -114,23 +109,23 @@ void UFirestoreDocumentReference::Get(FDocumentSnapshotCallback Callback) const
 	Get(EFirestoreSource::Default, MoveTemp(Callback));
 }
 
-#define CreateVoidCallback(ErrorMessage)																\
-	[Callback = MoveTemp(Callback)](const firebase::Future<void>& Future) mutable -> void				\
-	{																									\
-		const EFirestoreError Error = (EFirestoreError)Future.error();									\
-		if (Error != EFirestoreError::Ok)																\
-		{																								\
-			UE_LOG(LogFirestore, Error, TEXT(ErrorMessage) TEXT(" Code: %d. Message: %s"),				\
-				Error, UTF8_TO_TCHAR(Future.error_message()));											\
-		}																								\
-																										\
-		if (Callback.IsBound())																			\
-		{																								\
-			AsyncTask(ENamedThreads::GameThread, [Error, Callback = MoveTemp(Callback)]() -> void		\
-			{																							\
-				Callback.ExecuteIfBound(Error);															\
-			});																							\
-		}																								\
+#define CreateVoidCallback(ErrorMessage)																    \
+	[Copy = Reference, Callback = MoveTemp(Callback)](const firebase::Future<void>& Future) mutable -> void	\
+	{																										\
+		const EFirestoreError Error = (EFirestoreError)Future.error();										\
+		if (Error != EFirestoreError::Ok)																	\
+		{																									\
+			UE_LOG(LogFirestore, Error, TEXT(ErrorMessage) TEXT(" Code: %d. Message: %s"),					\
+				Error, UTF8_TO_TCHAR(Future.error_message()));												\
+		}																									\
+																											\
+		if (Callback.IsBound())																				\
+		{																									\
+			AsyncTask(ENamedThreads::GameThread, [Error, Callback = MoveTemp(Callback)]() -> void			\
+			{																								\
+				Callback.ExecuteIfBound(Error);																\
+			});																								\
+		}																									\
 	}
 
 void UFirestoreDocumentReference::Set(const TMap<FString, FFirestoreFieldValue>& Data,
@@ -146,7 +141,7 @@ void UFirestoreDocumentReference::Set(const TMap<FString, FFirestoreFieldValue>&
 		RawData.emplace(TCHAR_TO_UTF8(*DataElem.Key), DataElem.Value);
 	}
 
-	Reference->Set(RawData, options).OnCompletion(CreateVoidCallback("Failed to set document Reference->"));
+	Reference->Set(RawData, options).OnCompletion(CreateVoidCallback("Failed to set document"));
 #endif // WITH_FIREBASE_FIRESTORE 
 }
 
@@ -167,7 +162,7 @@ void UFirestoreDocumentReference::Update(const TMap<FString, FFirestoreFieldValu
 		RawData.emplace(TCHAR_TO_UTF8(*DataElem.Key), DataElem.Value);
 	}
 
-	Reference->Update(RawData).OnCompletion(CreateVoidCallback("Failed to update document Reference->"));
+	Reference->Update(RawData).OnCompletion(CreateVoidCallback("Failed to update document"));
 #endif // WITH_FIREBASE_FIRESTORE 
 }
 
@@ -183,14 +178,14 @@ void UFirestoreDocumentReference::Update(const TMap<FFirestoreFieldPath, FFirest
 		RawData.emplace(DataElem.Key, DataElem.Value);
 	}
 
-	Reference->Update(RawData).OnCompletion(CreateVoidCallback("Failed to updaet document Reference->"));
+	Reference->Update(RawData).OnCompletion(CreateVoidCallback("Failed to updaet document"));
 #endif // WITH_FIREBASE_FIRESTORE 
 }
 
 void UFirestoreDocumentReference::Delete(FFirestoreCallback Callback)
 {
 #if WITH_FIREBASE_FIRESTORE 
-	Reference->Delete().OnCompletion(CreateVoidCallback("Failed to delete document Reference->"));
+	Reference->Delete().OnCompletion(CreateVoidCallback("Failed to delete document"));
 #endif // WITH_FIREBASE_FIRESTORE 
 }
 
@@ -217,7 +212,7 @@ FString UFirestoreDocumentReference::ToString() const
 void UFirestoreDocumentReference::AddSnapshotListener(FDocumentSnapshotListener Callback)
 {
 #if !PLATFORM_LINUX && WITH_FIREBASE_FIRESTORE && defined(FIREBASE_USE_STD_FUNCTION) && !PLATFORM_IOS
-	Reference->AddSnapshotListener([Callback = MoveTemp(Callback)]
+	Reference->AddSnapshotListener([Copy = Reference, Callback = MoveTemp(Callback)]
 #if FIREBASE_SDK_SMALLER_THAN(8, 9, 0)
 	(const firebase::firestore::DocumentSnapshot& Snapshot, firebase::firestore::Error NativeError) mutable -> void
 #else
@@ -241,7 +236,7 @@ void UFirestoreDocumentReference::AddSnapshotListener(FDocumentSnapshotListener 
 void UFirestoreDocumentReference::AddSnapshotListener(FDocumentSnapshotListenerCallback Callback)
 {
 #if !PLATFORM_LINUX && WITH_FIREBASE_FIRESTORE && defined(FIREBASE_USE_STD_FUNCTION) && !PLATFORM_IOS
-	Reference->AddSnapshotListener([Callback = MoveTemp(Callback)]
+	Reference->AddSnapshotListener([Copy = Reference, Callback = MoveTemp(Callback)]
 #if FIREBASE_SDK_SMALLER_THAN(8, 9, 0)
 		(const firebase::firestore::DocumentSnapshot & Snapshot, firebase::firestore::Error NativeError) mutable -> void
 #else

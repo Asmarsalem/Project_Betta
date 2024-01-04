@@ -2,6 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FirebaseFeatures.h"
 #include "FbAdMobTypes.generated.h"
 
 UENUM(BlueprintType)
@@ -175,9 +176,11 @@ public:
 DECLARE_DELEGATE_OneParam(FAdMobCallback, const EFbAdMobError /* Error */);
 
 
+#if WITH_FIREBASE_ADMOB
 namespace FAdMobHelper
 {
 	class FInitAdRequestMemoryHandler;
 }
 
 using FAdMobAdRequestDataPtr = TUniquePtr<FAdMobHelper::FInitAdRequestMemoryHandler>;
+#endif

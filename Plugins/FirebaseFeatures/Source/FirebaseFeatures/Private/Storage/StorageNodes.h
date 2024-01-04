@@ -529,6 +529,7 @@ public:
 
     /// @brief Asynchronously uploads data to the currently specified
     /// StorageReference, without additional metadata.
+    /// Try PutFileUFS if it doesn't find the file.
     ///
     /// @param Path Path to local file on device to upload to Firebase
     /// Storage.
@@ -564,7 +565,7 @@ public:
     virtual void Activate();
 
     /// @brief Asynchronously uploads data to the currently specified
-    /// StorageReference, without additional metadata.
+    /// StorageReference.
     ///
     /// @param Path Path to local file on device to upload to Firebase
     /// Storage.
@@ -572,11 +573,23 @@ public:
     static UStoragePutFileWithMetadataProxy* PutFileWithMetadata(UFirebaseStorageReference* StorageReference, 
         const FString& Path, const FFirebaseStorageMetadata& Metadata);
 
+    /// @brief Asynchronously uploads data to the currently specified
+    /// StorageReference.
+    /// 
+    /// This version uses UFS to load the file.
+    ///
+    /// @param Path Path to local file on device to upload to Firebase
+    /// Storage.
+    UFUNCTION(BlueprintCallable, Category = "Firebase|Storage|StorageReference", meta = (BlueprintInternalUseOnly = "true", DisplayName = "Put File (UFS)"))
+    static UStoragePutFileWithMetadataProxy* PutFileUFS(UFirebaseStorageReference* StorageReference, 
+        const FString& Path, const FFirebaseStorageMetadata& Metadata);
+
 private:
     void OnActionOver(const EFirebaseStorageError Error, const FFirebaseStorageMetadata& Meta);
     void OnPausedInternal(FFirebaseStorageController& Controller);
     void OnProgressInternal(FFirebaseStorageController& Controller);
 
+    bool bUseUFS;
     FString _Path;
     FFirebaseStorageMetadata _Meta;
     FFirebaseStorageController Controller;

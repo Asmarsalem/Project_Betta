@@ -292,7 +292,7 @@ public:
 	/// is already linked with another id from the same provider.
 	/// Data from the Identity Provider used to sign-in is returned in the
 	/// AdditionalUserInfo inside SignInResult.
-	UFUNCTION(BlueprintCallable, Category = "Firebase|Auth|User", meta = (BlueprintInternalUseOnly = "true", DisplayName = "Link and Retrieve Data with Credential"))
+	UFUNCTION(BlueprintCallable, Category = "Firebase|Auth|User", meta = (BlueprintInternalUseOnly = "true", DisplayName = "Link and Retrieve Data with Credential", Deprecated))
 	static ULinkAndRetrieveDataWithCredentialProxy* LinkAndRetrieveDataWithCredential(UUser* const User, const FCredential& Credential);
 
 	virtual void Activate();

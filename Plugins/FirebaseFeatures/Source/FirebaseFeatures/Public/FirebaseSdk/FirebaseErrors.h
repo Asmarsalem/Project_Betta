@@ -645,6 +645,9 @@ enum class EFirebaseStorageError : uint8
 	DownloadSizeExceeded,
 	/// User cancelled the operation.
 	Cancelled,
+
+	// File was not found.
+	FileNotFound = 100,
 };
 
 

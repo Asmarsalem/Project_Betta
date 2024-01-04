@@ -4,7 +4,9 @@
 
 THIRD_PARTY_INCLUDES_START
 #	include "firebase/version.h"
-#	include "firebase/admob/banner_view.h"
+#	if FIREBASE_VERSION_MAJOR < 11
+#		include "firebase/admob/banner_view.h"
+#   endif
 #	if FIREBASE_VERSION_MAJOR >= 9
 #		include "firebase/gma/ad_view.h"
 #	endif
@@ -53,14 +55,18 @@ namespace
 	}
 
 UBannerView::UBannerView()
+#if WITH_FIREBASE_ADMOB
 	: BannerView(nullptr)
+#endif
 {	
 
 }
 
 UBannerView::UBannerView(FVTableHelper& Helper) 
 	: Super(Helper)
+#if WITH_FIREBASE_ADMOB
 	, BannerView(nullptr)
+#endif
 {
 
 }

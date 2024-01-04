@@ -246,8 +246,12 @@ struct FIREBASEFEATURES_API FWriteBatch
 	GENERATED_BODY()
 public:
 	FWriteBatch();
+	FWriteBatch(FWriteBatch&& Other);
+	FWriteBatch(const FWriteBatch& Other);
+
 	~FWriteBatch();
 
+	FWriteBatch& operator=(FWriteBatch&& Other);
 	FWriteBatch& operator=(const FWriteBatch& Other);
 
 	/**
@@ -303,6 +307,7 @@ public:
 	void Commit(const FFirestoreCallback& Callback);
 
 private:
+	friend class UFirestore;
 	TUniquePtr<firebase::firestore::WriteBatch> Batch;
 };
 
@@ -313,6 +318,12 @@ class FIREBASEFEATURES_API UFirestore : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
+
+	/**
+	 * Creates a batch for the default database.
+	*/
+	UFUNCTION(BlueprintCallable, Category = "Firebase|Firestore")
+	static UPARAM(DisplayName = "Batch") FWriteBatch CreateBatch();
 
 	/**
 	 * @brief Returns a CollectionReference instance that refers to the
@@ -425,9 +436,8 @@ public:
 	 * Sets if persistence is enabled or not. 
 	 * This is the same as calling SetSettings() with PersistenceEnabled set to bEnabled.
 	*/
-	// Disabled for now as the Desktop Firestore SDK crashes when using Firestore with persistence disabled.
-	//UFUNCTION(BlueprintCallable, Category = "Firebase|Firestore")
-	//static void SetPersistenceEnabled(const bool bEnabled);
+	UFUNCTION(BlueprintCallable, Category = "Firebase|Firestore")
+	static void SetPersistenceEnabled(const bool bEnabled);
 
 private:
 #if WITH_FIREBASE_FIRESTORE

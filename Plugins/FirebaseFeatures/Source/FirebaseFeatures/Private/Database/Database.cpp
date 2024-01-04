@@ -141,7 +141,7 @@ UDatabase* UDatabase::GetInstance()
 
 	if (ServicesState == EServicesState::INVALID)
 	{
-		const FText AlertTitle = NSLOCTEXT("FirebaseFeatures", "InvalidServicesTitle", "Invalid google-services.json");
+		FText AlertTitle = NSLOCTEXT("FirebaseFeatures", "InvalidServicesTitle", "Invalid google-services.json");
 		FMessageDialog::Open(EAppMsgType::Ok, NSLOCTEXT("FirebaseFeatures", "InvalidServicesMsg",
 			"Your google-services.json is not up to date. (`firebase_url` is missing)\n\n"
 			"The Database instance returned from UDatabase::GetInstance() is invalid "
@@ -151,7 +151,12 @@ UDatabase* UDatabase::GetInstance()
 			"You will have to restart the Editor after updating the google-services.json "
 			"for the changes to have effect.\n\n"
 			"This message won't appear in shipping builds and your app will crash."),
-			&AlertTitle);
+#if (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3) || ENGINE_MAJOR_VERSION > 5
+			AlertTitle
+#else
+			&AlertTitle
+#endif
+		);
 
 		return nullptr;
 	}

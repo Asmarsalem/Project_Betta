@@ -1,18 +1,14 @@
 // Copyright Pandores Marketplace 2023. All Rights Reserved.
 
 #include "Google/GoogleServices.h"
+
 #include "Async/Async.h"
 #include "FirebaseFeatures.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 
 THIRD_PARTY_INCLUDES_START
-#if PLATFORM_IOS
-#   ifdef INTERNAL_EXPERIMENTAL
-#       undef INTERNAL_EXPERIMENTAL
-#   endif
-#   define INTERNAL_EXPERIMENTAL 1
-#endif
 #include "firebase/app.h"
+#include "firebase/version.h"
 THIRD_PARTY_INCLUDES_END
 
 #include "FirebaseSdk/FirebaseConfig.h"
@@ -24,8 +20,13 @@ THIRD_PARTY_INCLUDES_END
 
 #if PLATFORM_IOS && WITH_FIREBASE_AUTH
 #   include "IOS/IOSAppDelegate.h"
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wobjc-property-no-attribute"
+THIRD_PARTY_INCLUDES_START
 #   import <GoogleSignIn/GIDConfiguration.h>
 #   import <GoogleSignIn/GoogleSignIn.h>
+THIRD_PARTY_INCLUDES_END
+#   pragma clang diagnostic pop
 #endif
 
 DECLARE_LOG_CATEGORY_CLASS(LogGoogleServices, Log, All);
@@ -195,11 +196,15 @@ void UGoogleServicesLibrary::SignIn(const FString& ServerClientID, const bool bS
 
         dispatch_async(dispatch_get_main_queue(), [Callback = MoveTemp(Callback)]() mutable -> void
         {
-            [GIDSignIn.sharedInstance restorePreviousSignInWithCallback : [Callback = MoveTemp(Callback)] (GIDGoogleUser* _Nullable user, NSError* _Nullable error) mutable -> void
+#if FIREBASE_SDK_SMALLER_THAN(9, 0, 0)
+            [GIDSignIn.sharedInstance restorePreviousSignInWithCallback: [Callback = MoveTemp(Callback)] (GIDGoogleUser* _Nullable user, NSError* _Nullable error) mutable -> void
+#else
+            [GIDSignIn.sharedInstance restorePreviousSignInWithCompletion: [Callback = MoveTemp(Callback)] (GIDGoogleUser* _Nullable user, NSError* _Nullable error) mutable -> void
+#endif
             {
                 bool bSuccess = error == nil;
                 FString ErrMessage;
-                if (bSuccess)
+                if (!bSuccess)
                 {
                     ErrMessage = error.description;
                     UE_LOG(LogGoogleServices, Error, TEXT("Failed to restore previous sign in: %d - %s"), error.code, *ErrMessage);
@@ -227,10 +232,19 @@ void UGoogleServicesLibrary::SignIn(const FString& ServerClientID, const bool bS
             firebase::App* const App = firebase::App::GetInstance();
 
             GIDConfiguration* config = [[GIDConfiguration alloc] initWithClientID: FString(UTF8_TO_TCHAR(App->options().client_id())).GetNSString()];
+#if FIREBASE_SDK_SMALLER_THAN(9, 0, 0)
             [GIDSignIn.sharedInstance signInWithConfiguration: config 
                                      presentingViewController: [IOSAppDelegate GetDelegate].IOSController
                                                      callback: [Callback = MoveTemp(Callback)] (GIDGoogleUser* _Nullable user, NSError* _Nullable error) mutable -> void
+#else
+            GIDSignIn.sharedInstance.configuration = config;
+            [GIDSignIn.sharedInstance signInWithPresentingViewController: [IOSAppDelegate GetDelegate].IOSController
+                                                              completion: [Callback = MoveTemp(Callback)] (GIDSignInResult* _Nullable result, NSError* _Nullable error) mutable -> void
+#endif
             {
+#if (!FIREBASE_SDK_SMALLER_THAN(9, 0, 0))
+                GIDGoogleUser* user = result ? result.user : nil;
+#endif
                 bool bSuccess = error == nil;
                 FString ErrMessage;
                 if (bSuccess)
@@ -404,10 +418,17 @@ FString UGoogleServicesLibrary::GetIdToken()
     }
     return TEXT("");
 #elif PLATFORM_IOS && WITH_FIREBASE_AUTH
+#if FIREBASE_SDK_SMALLER_THAN(9, 0, 0)
     if (GIDSignIn.sharedInstance.currentUser != nil && GIDSignIn.sharedInstance.currentUser.authentication != nil)
     {
         return GIDSignIn.sharedInstance.currentUser.authentication.idToken;
     }
+#else
+    if (GIDSignIn.sharedInstance != nil && GIDSignIn.sharedInstance.currentUser != nil && GIDSignIn.sharedInstance.currentUser.idToken != nil)
+    {
+        return GIDSignIn.sharedInstance.currentUser.idToken.tokenString;
+    }
+#endif
 
     return TEXT("");
 #else
@@ -441,10 +462,17 @@ FString UGoogleServicesLibrary::GetServerAuthCode()
 FString UGoogleServicesLibrary::GetAccessToken()
 {
 #if PLATFORM_IOS && WITH_FIREBASE_AUTH
+#if FIREBASE_SDK_SMALLER_THAN(9, 0, 0)
     if (GIDSignIn.sharedInstance.currentUser != nil && GIDSignIn.sharedInstance.currentUser.authentication != nil)
     {
         return GIDSignIn.sharedInstance.currentUser.authentication.accessToken;
     }
+#else
+    if (GIDSignIn.sharedInstance.currentUser != nil && GIDSignIn.sharedInstance.currentUser.accessToken != nil)
+    {
+        return GIDSignIn.sharedInstance.currentUser.accessToken.tokenString;
+    }
+#endif
 
     return TEXT("");
 #else

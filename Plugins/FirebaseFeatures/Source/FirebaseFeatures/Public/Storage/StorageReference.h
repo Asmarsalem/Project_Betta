@@ -463,6 +463,16 @@ public:
         const FFirebaseStorageControllerCallback& OnPaused = FFirebaseStorageControllerCallback()
     );
 
+    void PutFileUFS
+    (
+        const FString& Path,
+        const FFirebaseStorageMetadata& Metadata,
+        FFirebaseStorageController& Controller,
+        const FFirebaseStorageMetadataCallback& OnUploadOver = FFirebaseStorageMetadataCallback(),
+        const FFirebaseStorageControllerCallback& OnProgress = FFirebaseStorageControllerCallback(),
+        const FFirebaseStorageControllerCallback& OnPaused = FFirebaseStorageControllerCallback()
+    );
+
     /// @brief Returns true if this StorageReference is valid, false if it is not
     /// valid. An invalid StorageReference indicates that the reference is
     /// uninitialized (created with the default constructor) or that there was an

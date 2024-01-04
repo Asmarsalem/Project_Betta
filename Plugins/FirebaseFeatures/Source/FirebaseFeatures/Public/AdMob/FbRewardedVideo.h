@@ -16,6 +16,7 @@ class FIREBASEFEATURES_API FRewardedVideo final
 private:
 	friend class FRewardedVideoListener;
 	friend class FFirebaseFeaturesModule;
+	friend class FPaidEventListener;
 
 private:
 	FRewardedVideo() = delete;
@@ -46,6 +47,9 @@ private:
 	static FAdMobVideoOnPresentationStateChanged OnPresentationStateChangedEvent;
 
 	static TUniquePtr<class FRewardedVideoListener> Listener;
+#if FIREBASE_VERSION_MAJOR >= 11
+	static TUniquePtr<class FPaidEventListener> PaidListener;
+#endif
 
 };
 

@@ -5,6 +5,16 @@
 #include "CoreMinimal.h"
 #include "FirebaseConfig.generated.h"
 
+UENUM(BlueprintType)
+enum class EAppCheckProvider : uint8
+{
+	None,
+	PlayIntegrity,
+	DeviceCheck,
+	AppAttest,
+	Debug,
+};
+
 UCLASS(Config = Engine, defaultconfig)
 class FIREBASEFEATURES_API UFirebaseConfig : public UObject
 {
@@ -16,6 +26,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Features", meta = (DisplayName = "Enable Firebase Authentication", Tooltip = "If you want to enable Authentication."))
 	bool bEnableAuth = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Features", meta = (DisplayName = "Enable Firebase App Check", Tooltip = "If you want to enable App Check."))
+	bool bEnableAppCheck = true;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Features", meta = (DisplayName = "Enable Firestore", Tooltip = "If you want to enable Firestore."))
 	bool bEnableFirestore = true;
@@ -66,6 +79,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Google Sign-In", meta = (DisplayName = "Enable Google Sign-In"))
 	bool bEnableGoogleSignIn = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Google Sign-In", meta = (DisplayName = "Google Sign-In Client ID"))
+	FString GoogleClientId;
+
 	/**
 	 * The Google Reversed Client ID for Google Sign-In. (com.googleusercontent.apps.1234567890-abcdefg).
 	 * This value will be inserted in the info.plist's URL scheme.
@@ -113,4 +129,22 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "iOS", Meta = (DisplayName = "Firebase App Store Receipt URL Check Enabled"))
 	bool bFirebaseAppStoreReceiptURLCheckEnabled = true;
+
+	/**
+	 * The AppCheck provider to use for Android.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "AppCheck", Meta = (DisplayName = "Android App Check Provider"))
+	EAppCheckProvider AndroidAppCheckProvider;
+
+	/**
+	 * The AppCheck provider to use for iOS.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "AppCheck", Meta = (DisplayName = "iOS App Check Provider"))
+	EAppCheckProvider iOSAppCheckProvider;
+	
+	/**
+	 * The AppCheck provider to use for desktop.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "AppCheck", Meta = (DisplayName = "Desktop App Check Provider"))
+	EAppCheckProvider DesktopAppCheckProvider;
 };

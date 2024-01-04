@@ -134,6 +134,18 @@ void UFirebaseAnalyticsLibrary::LogEventFloat(const FString& EventName, const FS
 #endif
 }
 
+void UFirebaseAnalyticsLibrary::LogEventDouble(const FString& EventName, const FString& ParameterName, const double ParameterValue)
+{
+#if WITH_FIREBASE_ANALYTICS
+	FIREBASE_ANALYTICS_GUARD_SESSION_STARTED();
+
+	firebase::analytics::LogEvent(TCHAR_TO_UTF8(*EventName), TCHAR_TO_UTF8(*ParameterName), ParameterValue);
+
+	UE_LOG(LogFirebaseAnalytics, Log, TEXT("Double event %s logged."), *EventName);
+#endif
+}
+
+
 void UFirebaseAnalyticsLibrary::LogEventInt64(const FString& EventName, const FString& ParameterName, const int64 ParameterValue)
 {
 #if WITH_FIREBASE_ANALYTICS
@@ -205,6 +217,41 @@ void UFirebaseAnalyticsLibrary::LogEventWithParameter(const FString& EventName, 
 	firebase::analytics::LogEvent(TCHAR_TO_UTF8(*EventName), RawParameters.Get(), ParametersCount);	
 
 	UE_LOG(LogFirebaseAnalytics, Log, TEXT("Event %s logged with parameters."), *EventName);
+#endif
+}
+
+void UFirebaseAnalyticsLibrary::LogEventWithParameters(const FString& EventName, const TMap<FString, FFirebaseVariant>& Parameters)
+{
+#if WITH_FIREBASE_ANALYTICS
+	FIREBASE_ANALYTICS_GUARD_SESSION_STARTED();
+
+	const int32 ParametersCount = Parameters.Num();
+	if (ParametersCount <= 0)
+	{
+		LogEvent(EventName);
+		return;
+	}
+
+	TUniquePtr<firebase::analytics::Parameter[]> RawParameters = MakeUnique<firebase::analytics::Parameter[]>(ParametersCount);
+
+	// Stores the converted strings here as the SDK expects const char*.
+	TArray<std::string> Strings;
+	Strings.Reserve(ParametersCount);
+	
+	{
+		int32 i = 0;
+
+		for (const auto& Parameter : Parameters)
+		{
+			const char* Key = Strings.Emplace_GetRef(TCHAR_TO_UTF8(*Parameter.Key)).c_str();
+			RawParameters[i] = firebase::analytics::Parameter(Key, Parameter.Value.GetRawVariant());
+			++i;
+		}
+	}
+
+	firebase::analytics::LogEvent(TCHAR_TO_UTF8(*EventName), RawParameters.Get(), ParametersCount);
+
+	UE_LOG(LogFirebaseAnalytics, Log, TEXT("Event %s logged with %d parameters."), *EventName, ParametersCount);
 #endif
 }
 

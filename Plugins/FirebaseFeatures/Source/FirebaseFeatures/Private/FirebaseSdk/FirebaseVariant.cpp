@@ -52,7 +52,7 @@ FString FVariantHelper::VariantTypeToString(const EFirebaseVariantType& Type)
 FFirebaseVariant FFirebaseVariant::ServerTimestamp()
 {
 #if WITH_FIREBASE_DATABASE
-	return firebase::database::ServerTimestamp();
+	return FFirebaseVariant(firebase::database::ServerTimestamp());
 #else
 	return {};
 #endif

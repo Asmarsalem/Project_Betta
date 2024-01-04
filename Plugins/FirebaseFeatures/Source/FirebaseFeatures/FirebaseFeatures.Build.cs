@@ -2,6 +2,7 @@
 
 using UnrealBuildTool;
 using System.IO;
+using System;
 
 #if UE_5_0_OR_LATER
 using EpicGames.Core;
@@ -60,6 +61,7 @@ public class FirebaseFeatures : ModuleRules
 		"firebase_messaging",
 		"firebase_remote_config",
 		"firebase_storage",
+        "firebase_app_check"
 		//"firebase_instance_id",
 	};
 
@@ -77,7 +79,7 @@ public class FirebaseFeatures : ModuleRules
 		"firebase_admob",
 		"firebase_analytics",
 		"firebase_auth",
-		"firebase_database",
+		"firebase_database", 
 		"firebase_dynamic_links",
 		"firebase_firestore",
 		"firebase_functions",
@@ -107,11 +109,12 @@ public class FirebaseFeatures : ModuleRules
 
 		// Unreal Engine Dependencies
 		PublicDependencyModuleNames .AddRange(new string[] { "Core" });
-		PrivateDependencyModuleNames.AddRange(new string[] { "CoreUObject", "Engine", "OpenSSL", "JSON" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "CoreUObject", "Engine", "OpenSSL", "Json" });
 
 		// Config values for modules taken from DefaultEngine.ini.
 		string FirebaseModulesSection = "/Script/FirebaseFeatures.FirebaseConfig";
 		bEnableAuth			= GetFeaturesEnabledStatus(FirebaseModulesSection, "bEnableAuth",			true);
+		bEnableAppCheck		= GetFeaturesEnabledStatus(FirebaseModulesSection, "bEnableAppCheck",		true);
 		bEnableFirestore	= GetFeaturesEnabledStatus(FirebaseModulesSection, "bEnableFirestore",		true);
 		bEnableDatabase		= GetFeaturesEnabledStatus(FirebaseModulesSection, "bEnableDatabase",		true);
 		bEnableAdMob		= GetFeaturesEnabledStatus(FirebaseModulesSection, "bEnableAdMob",			true);
@@ -172,23 +175,31 @@ public class FirebaseFeatures : ModuleRules
 				"GSS",
 				"SystemConfiguration",
 				"JavaScriptCore",
-				"LocalAuthentication"
-			});
+				"LocalAuthentication",
+                "AuthenticationServices",
+            });
 
-			// Firebase includes. Switched back to libs for the cpp sdk.
-			PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "include/ios"));
+			SetupSwiftLinkage();
+
+            // Firebase includes.
+            PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "11.4.0/inc/"));
 
 			// iOS UPL
 			AdditionalPropertiesForReceipt.Add("IOSPlugin", Path.Combine(ModuleDirectory, "FirebaseSdk.ios.upl.xml"));
 
-			// Objective-C Frameworks
+			// Firebase frameworks
 
 			if (bEnableCrashlytics)
             {
 				AddFrameworkChecked("FirebaseCrashlytics");
             }
 
-			if (bEnablePerformance)
+            if (bEnableCrashlytics)
+            {
+                AddFrameworkChecked("FirebaseCrashlytics");
+            }
+
+            if (bEnablePerformance)
             { 
 				AddFrameworkChecked("FirebasePerformance");
 				AddFrameworkChecked("GTMSessionFetcher");
@@ -198,13 +209,17 @@ public class FirebaseFeatures : ModuleRules
 
 			if (System.Array.IndexOf(FirebaseFrameworks, "firebase") >= 0)
 			{
-				AddFirebaseFramework("firebase");
+				AddFirebaseFramework("firebase_app", false, "firebase");
+                AddFrameworkChecked("FBLPromises");
+                AddFrameworkChecked("PromisesSwift");
+                AddFrameworkChecked("FirebaseSessions");
 				AddFrameworkChecked("FirebaseCore");
-				AddFrameworkChecked("FirebaseCoreDiagnostics");
+				AddFrameworkChecked("FirebaseCoreInternal");
+				AddFrameworkChecked("FirebaseCoreExtension");
+				AddFrameworkChecked("FirebaseAppCheckInterop");
 				AddFrameworkChecked("GoogleUtilities");
 				AddFrameworkChecked("GoogleDataTransport");
 				AddFrameworkChecked("FirebaseInstallations");
-				AddFrameworkChecked("PromisesObjC");
 				AddFrameworkChecked("nanopb");
 				AddFrameworkChecked("leveldb-library");
 			}
@@ -233,6 +248,7 @@ public class FirebaseFeatures : ModuleRules
 			{
 				AddFirebaseFramework("firebase_functions");
 				AddFrameworkChecked("FirebaseFunctions");
+				AddFrameworkChecked("FirebaseSharedSwift");
 				AddFrameworkChecked("GTMSessionFetcher");
 			}
 
@@ -244,7 +260,6 @@ public class FirebaseFeatures : ModuleRules
 				AddFrameworkChecked("abseil");
 				AddFrameworkChecked("gRPC-C++", "Resources/gRPCCertificates-Cpp.bundle");
 				AddFrameworkChecked("gRPC-Core");
-				AddFrameworkChecked("Libuv-gRPC");
 				AddFrameworkChecked("leveldb-library");
 			}
 
@@ -253,6 +268,7 @@ public class FirebaseFeatures : ModuleRules
 			{
 				AddFirebaseFramework("firebase_auth");
 				AddFrameworkChecked("FirebaseAuth");
+				AddFrameworkChecked("FirebaseAuthInterop");
 				AddFrameworkChecked("GoogleSignIn");
 				AddFrameworkChecked("AppAuth");
                 AddFrameworkChecked("GTMAppAuth");
@@ -264,6 +280,7 @@ public class FirebaseFeatures : ModuleRules
 			{
 				AddFirebaseFramework("firebase_messaging");
 				AddFrameworkChecked("FirebaseMessaging");
+				AddFrameworkChecked("FirebaseMessagingInterop");
 				AddFrameworkChecked("FirebaseABTesting");
 				AddFrameworkChecked("FirebaseInAppMessaging", "Resources/InAppMessagingDisplayResources.bundle");
 
@@ -273,7 +290,8 @@ public class FirebaseFeatures : ModuleRules
 			// AdMob Objective-C dependencies.
 			if (bEnableAdMob && System.Array.IndexOf(FirebaseFrameworks, "firebase_admob") >= 0)
 			{
-				AddFirebaseFramework("firebase_admob");
+				AddFirebaseFramework("firebase_admob", true);
+				AddFirebaseFramework("firebase_gma", true);
 				AddFrameworkChecked("GoogleMobileAds");
 				AddFrameworkChecked("AppAuth");
 				AddFrameworkChecked("GTMAppAuth");
@@ -287,14 +305,12 @@ public class FirebaseFeatures : ModuleRules
 				AddFirebaseFramework("firebase_analytics");
 				AddFrameworkChecked("FirebaseAnalytics");
 				AddFrameworkChecked("FirebaseCore");
-				AddFrameworkChecked("FirebaseCoreDiagnostics");
 				AddFrameworkChecked("FirebaseInstallations");
 				AddFrameworkChecked("GoogleAppMeasurement");
 				AddFrameworkChecked("GoogleAppMeasurementIdentitySupport");
 				AddFrameworkChecked("GoogleDataTransport");
 				AddFrameworkChecked("GoogleUtilities");
 				AddFrameworkChecked("nanopb");
-				AddFrameworkChecked("PromisesObjC");
 			}
 
 			if (bEnableRemoteConfig && System.Array.IndexOf(FirebaseFrameworks, "firebase_remote_config") >= 0)
@@ -303,9 +319,6 @@ public class FirebaseFeatures : ModuleRules
 				AddFrameworkChecked("FirebaseRemoteConfig");
 				AddFrameworkChecked("FirebaseABTesting");
 			}
-
-			// Native SDK includes
-			PublicSystemIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "include/ios/"));
 
 			// Required plist file.
 			if (!File.Exists(Path.Combine(ProjectDirectory, "Services/GoogleService-Info.plist")) &&
@@ -325,7 +338,7 @@ public class FirebaseFeatures : ModuleRules
 			// Required system frameworks.
 			PublicFrameworks.AddRange(new string[]
 			{
-				//"UniformTypeIdentifiers",
+				//"UniformTypeIdentifiers", 
 				"UserNotifications",
 				"CoreFoundation",
 				"Foundation",
@@ -334,13 +347,13 @@ public class FirebaseFeatures : ModuleRules
 				"GSS",
 				"SystemConfiguration",
 				"JavaScriptCore",
-				"LocalAuthentication"
-			});
+				"LocalAuthentication",
+            });
 
-			// Firebase includes.
-			PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "include"));
+            // Firebase includes.
+            PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "11.1.0/inc/"));
 
-			LinkFirebaseLibraries();
+            LinkFirebaseLibraries();
 
 			AddRuntimeDependency(Path.Combine(GetServicesDir(Target), "google-services.json"));
 		}
@@ -350,10 +363,11 @@ public class FirebaseFeatures : ModuleRules
 			AddSystemLibrary("userenv.lib");
 			AddSystemLibrary("psapi.lib");
 
-			// Firebase includes.
-			PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "include"));
-			
-			LinkFirebaseLibraries();
+            // Firebase includes.
+            // PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "include"));
+            PublicIncludePaths.Add(Path.Combine(FirebaseSdkRoot, "11.1.0/inc/"));
+
+            LinkFirebaseLibraries();
 
 			AddRuntimeDependency(Path.Combine(GetServicesDir(Target), "google-services.json"));
 		}
@@ -430,9 +444,13 @@ public class FirebaseFeatures : ModuleRules
 		AddFirebaseLibrary("firebase_app");
 		if (bEnableAdMob && System.Array.IndexOf(FirebaseLibraries, "firebase_admob") >= 0)
 		{
-			AddFirebaseLibrary("firebase_admob");
+			AddFirebaseLibrary("firebase_admob", true);
 			AddFirebaseLibrary("firebase_gma", true);
 		}
+		if (bEnableAppCheck && System.Array.IndexOf(FirebaseLibraries, "firebase_app_check") >= 0)
+		{
+            AddFirebaseLibrary("firebase_app_check", true);
+        }
 		if (bEnableAnalytics && System.Array.IndexOf(FirebaseLibraries, "firebase_analytics") >= 0)
 		{ 
 			AddFirebaseLibrary("firebase_analytics");
@@ -500,29 +518,30 @@ public class FirebaseFeatures : ModuleRules
 		{
 			return new string[]
 			{
-				LibsDir + "windows/VS2015/MD/x64/"
-					+ (bIsDebugBuild ? "Debug" : "Release")
+				"11.1.0/libs/windows/VS2019/MD/x64/"
 			};
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
-			return new string[]
+            string MacSDKRoot = "11.1.0/libs/";
+
+            return new string[]
 			{
-				LibsDir + "darwin/universal",
+				MacSDKRoot + "darwin/universal",
 			};
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.Android)
 		{
-			string AndroidSDKRoot = "../9.4.0/libs/android/";
+			string AndroidSDKRoot = "9.4.0/libs/android/";
 
 			return new string[]
 			{
-				LibsDir + AndroidSDKRoot + "armeabi-v7a/c++",
-				LibsDir + AndroidSDKRoot + "arm64-v8a/c++",
-				LibsDir + AndroidSDKRoot + "x86/c++",
-				LibsDir + AndroidSDKRoot + "x86_64/c++",
+				AndroidSDKRoot + "armeabi-v7a/c++",
+				AndroidSDKRoot + "arm64-v8a/c++",
+				AndroidSDKRoot + "x86/c++",
+				AndroidSDKRoot + "x86_64/c++",
 			};
 		}
 
@@ -531,17 +550,15 @@ public class FirebaseFeatures : ModuleRules
 			return new string[]
 			{
 				LibsDir + "ios/universal/",
-				
-				// Uncomment these libs if you target these architectures.
-				//LibsDir + "ios/arm64/",
-				//LibsDir + "ios/armv7/",
-				//LibsDir + "ios/i386/",
-				//LibsDir + "ios/x86_64/",
 			};
 		}
 
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
+            throw new System.Exception(
+				"NOTE: Linux libraries aren't included anymore. If you want to build for Linux, libraries must be downloaded from Google's website.\n" +
+				"Send an email to pandores.marketplace@gmail.com for more information.\n");
+
 			if (bLinuxLinkPICLibraries)
             {
 				return new string[]
@@ -609,8 +626,8 @@ public class FirebaseFeatures : ModuleRules
 
 	private void AddFrameworkChecked(string Name, string Bundle = null, bool bCppFramework = false)
     {
-		string FrameworkRoot	 = Path.Combine(FirebaseSdkRoot, "frameworks/ios/universal");
-		string FrameworkLocation = FrameworkRoot + "/" + (bCppFramework ? "cpp" : "objc") + "/" + Name + ".framework.zip";
+		string FrameworkRoot	 = Path.Combine(FirebaseSdkRoot, "11.4.0/lib/ios/");
+		string FrameworkLocation = Path.Combine(FrameworkRoot, Name + ".framework.zip");
 
 		if (!File.Exists(FrameworkLocation))
         {
@@ -678,10 +695,38 @@ public class FirebaseFeatures : ModuleRules
 		}
 	}
 
-	private void AddFirebaseFramework(string FrameworkName)
+	private void SetupSwiftLinkage()
+	{
+        string SDKROOT = Utils.RunLocalProcessAndReturnStdOut("/usr/bin/xcrun", "--sdk iphoneos --show-sdk-path");
+        PublicSystemLibraryPaths.Add(SDKROOT + "/usr/lib/swift");
+        PublicSystemLibraryPaths.Add(SDKROOT + "../../../../../../Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphoneos");
+        PublicSystemLibraryPaths.Add(SDKROOT + "../../../../../../Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.0/iphoneos");
+        PublicSystemLibraryPaths.Add(SDKROOT + "../../../../../../Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-5.5/iphoneos");
+    }
+
+	private void AddFirebaseFramework(string Library, bool bAllowFail = false, string DefineOverride = null)
     {
-		PublicAdditionalLibraries.Add(Path.Combine(FirebaseSdkRoot, "frameworks/ios/universal/cpp/libs/lib" + FrameworkName + ".a"));
-		PublicDefinitions.Add("WITH_" + FrameworkName.ToUpper() + "=1");
+		bool bUseLibraries = true;
+
+        string FrameworkName = Path.Combine(FirebaseSdkRoot, "11.4.0/lib/ios/", Library + ".framework.zip");
+        string LibraryName   = Path.Combine(FirebaseSdkRoot, "11.4.0/lib/ios/", "lib" + Library + ".a");
+		 
+        if (!bUseLibraries)
+        {
+			if (!bAllowFail || File.Exists(FrameworkName))
+            {
+                PublicAdditionalLibraries.Add(FrameworkName);
+                PublicDefinitions.Add("WITH_" + (DefineOverride != null ? DefineOverride : Library).ToUpper() + "=1");
+            }
+        }
+        else
+        {
+            if (!bAllowFail || File.Exists(LibraryName))
+            {
+				PublicAdditionalLibraries.Add(LibraryName);
+				PublicDefinitions.Add("WITH_" + (DefineOverride != null ? DefineOverride : Library).ToUpper() + "=1");
+            }
+        }
 	}
 
 	private void CheckEnvironment(ReadOnlyTargetRules Target)
@@ -690,14 +735,14 @@ public class FirebaseFeatures : ModuleRules
 		// external symbols. We just notice the users that they need to actually rebuild the plugin to disable 
 		// the module.
 
-		System.Console.WriteLine("Firebase Features plugin path is " + PluginDirectory);
-
 		bIsPluginInEngineDir = PluginDirectory.Contains("Engine/Plugins") || PluginDirectory.Contains("Engine\\Plugins");
 
 		// Change true to false if you don't want these messages to appear anymore.
 		if (true)
-		{ 
-			if (bIsPluginInEngineDir)
+        {
+            System.Console.WriteLine("Firebase Features plugin path is " + PluginDirectory);
+
+            if (bIsPluginInEngineDir)
 			{
 					System.Console.WriteLine("\n\t /!\\ Firebase Features is being included in a build as an Engine plugin. " +
 						"It means that its binaries won't be rebuilt and thus, C++ changes of disabling or enabling " +
@@ -709,6 +754,7 @@ public class FirebaseFeatures : ModuleRules
 				// Summary of what's linked or not to help troubleshooting.
 				System.Console.WriteLine("Firebase Features is being included in a build as a Project plugin. Linkage will follow the plugin's configuration: ");
 				PrintModuleLinkageStatus("Auth",			bEnableAuth);
+				PrintModuleLinkageStatus("App Check",		bEnableAppCheck);
 				PrintModuleLinkageStatus("Firestore",		bEnableFirestore);
 				PrintModuleLinkageStatus("Database",		bEnableDatabase);
 				PrintModuleLinkageStatus("AdMob",			bEnableAdMob);
@@ -722,20 +768,6 @@ public class FirebaseFeatures : ModuleRules
 				PrintModuleLinkageStatus("Performance",		bEnablePerformance);
 			}
 		}
-
-		// Checks for the directory of iOS frameworks.
-		if (!Directory.Exists(Path.Combine(FirebaseSdkRoot, "frameworks/ios/universal")))
-        {
-			if (Target.Platform == UnrealTargetPlatform.IOS)
-            {
-				System.Console.WriteLine("\n\n /!\\ iOS Firebase framework directory does not exist. Build will fail. /!\\\n ");
-            }
-			else
-            {
-				System.Console.WriteLine("Failed to find iOS Firebase frameworks directory.");
-			}
-        }
-
 	}
 
 	private void PrintModuleLinkageStatus(string Module, bool bLinked)
@@ -746,7 +778,8 @@ public class FirebaseFeatures : ModuleRules
 	private ConfigHierarchy EngineConfig;
 
 	private bool bEnableAuth;
-	private bool bEnableFirestore;
+	private bool bEnableAppCheck;
+    private bool bEnableFirestore;
 	private bool bEnableDatabase;
 	private bool bEnableAdMob;
 	private bool bEnableAnalytics;

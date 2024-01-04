@@ -98,10 +98,12 @@ public:
 	UPARAM(DisplayName = "Bounding Box") FAdMobBoundingBox GetBoundingBox() const;
 
 private:
+#if WITH_FIREBASE_ADMOB
 	std::string AdUnit;
 
 	FFirebaseBannerView* BannerView;
 
 	FAdMobAdRequestDataPtr RequestData;
+#endif
 };
 

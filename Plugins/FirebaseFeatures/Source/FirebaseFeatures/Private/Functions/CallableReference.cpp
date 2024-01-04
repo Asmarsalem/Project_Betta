@@ -95,7 +95,7 @@ void FFirebaseHttpsCallableReference::Call(const FFunctionsCallCallback& Callbac
 
 		AsyncTask(ENamedThreads::GameThread, [Copy, Callback, Error, Result = MoveTemp(Result)]() -> void
 		{
-			Callback.ExecuteIfBound(Error, Result.data());
+			Callback.ExecuteIfBound(Error, FFirebaseVariant(Result.data()));
 			delete Copy;
 		});
 	});
@@ -120,7 +120,7 @@ static void CallInternal(firebase::functions::HttpsCallableReference& Ref, const
 
 		AsyncTask(ENamedThreads::GameThread, [Copy, Callback, Error, Result = MoveTemp(Result)]() -> void
 		{
-			Callback.ExecuteIfBound(Error, Result);
+			Callback.ExecuteIfBound(Error, FFirebaseVariant(Result));
 			delete Copy;
 		});
 	});
