@@ -10,7 +10,7 @@ public class GASCompanionDemo : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore","GASCompanion","TestGFRuntime","PlayFab","HTTP" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "GASCompanion", "GameplayTags", "GameplayAbilities", "PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime", "FirebaseFeatures" });
+		PrivateDependencyModuleNames.AddRange(new string[] { "GASCompanion", "GameplayTags", "GameplayAbilities", "PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime", "FirebaseFeatures", "ChunkDownloader" });
 
 		// Here is where you should set these flags
 		bUseAVX = true;
