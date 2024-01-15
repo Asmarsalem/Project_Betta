@@ -17,6 +17,10 @@ class GASCOMPANIONDEMO_API AGM_TestGameMood : public AGameMode
 {
 	GENERATED_BODY()
 public:
+	// override default Func
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 	UPROPERTY()
 	UTimelineComponent* MyTimeline;
 	
@@ -33,4 +37,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FAttributeChangeSignature onAttributeChange;
 
+	UFUNCTION(BlueprintPure)
+	FVector GetRandomReachableLocation(TSubclassOf<AActor> PlayerLocation,bool& Success);
+	
+	UFUNCTION(BlueprintPure)
+	bool GetCurve(TSubclassOf<AActor> ArrayType,UCurveTable* Table,UAbilitySystemComponent* Ability);
+
+	UPROPERTY(EditAnywhere,BlueprintReadOnly)
+	FTimerHandle timeh;
+	UFUNCTION(BlueprintImplementableEvent)
+	void SpawnAiRef();
+	
 };
