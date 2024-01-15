@@ -58,7 +58,7 @@ public: // Constructors
     FFirebaseVariant(FFirebaseVariant&& Other);
     FFirebaseVariant(const FFirebaseVariant&);
 
-    explicit FFirebaseVariant(const firebase::Variant& InVariant);
+    FFirebaseVariant(const firebase::Variant& InVariant);
     FFirebaseVariant(const FString& Value);
     FFirebaseVariant(const TCHAR*   Value);
     FFirebaseVariant(const ANSICHAR*Value);

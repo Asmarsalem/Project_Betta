@@ -4,9 +4,7 @@
 
 THIRD_PARTY_INCLUDES_START
 #	include "firebase/version.h"
-#	if FIREBASE_VERSION_MAJOR < 11
-#	    include "firebase/admob/rewarded_video.h"
-#   endif
+#	include "firebase/admob/rewarded_video.h"
 #	if FIREBASE_VERSION_MAJOR >= 9
 #		include "firebase/gma/rewarded_ad.h"
 #	endif
@@ -25,40 +23,13 @@ static TUniquePtr<firebase::gma::RewardedAd> GRewardedVideo;
 static TUniquePtr<firebase::gma::UserEarnedRewardListener> GRewardedVideoListener;
 #endif
 
-class FPaidEventListener final
-#if WITH_FIREBASE_ADMOB && FIREBASE_VERSION_MAJOR >= 11
-	: public firebase::gma::PaidEventListener
-#endif
-{
-public:
-
-#if WITH_FIREBASE_ADMOB && FIREBASE_VERSION_MAJOR >= 11
-	virtual void OnPaidEvent(const firebase::gma::AdValue& value) override
-	{
-		FAdMobRewardItem Item;
-		Item.Amount		= value.value_micros();
-		Item.RewardType = UTF8_TO_TCHAR(value.currency_code().c_str());
-
-		UE_LOG(LogAdMob, Log, TEXT("Received Rewarded Video's reward. Type: %s. Amount: %f."), *Item.RewardType, Item.Amount);
-
-		if (FRewardedVideo::OnRewardedEvent.IsBound())
-		{
-			AsyncTask(ENamedThreads::GameThread, [Item]() -> void 
-			{
-				FRewardedVideo::OnRewardedEvent.ExecuteIfBound(Item.RewardType, Item.Amount);
-			});
-		}	
-	}
-#endif
-};
-
 class FRewardedVideoListener final 
-#if WITH_FIREBASE_ADMOB && FIREBASE_VERSION_MAJOR < 11
+#if WITH_FIREBASE_ADMOB
 	: public FFirebaseRewardedVideo::Listener
 #endif
 {
 public:
-#if WITH_FIREBASE_ADMOB && FIREBASE_VERSION_MAJOR < 11
+#if WITH_FIREBASE_ADMOB
 	virtual void OnRewarded(FFirebaseRewardedVideo::RewardItem reward) final
 	{
 		FAdMobRewardItem Item;

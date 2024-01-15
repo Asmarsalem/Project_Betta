@@ -64,7 +64,7 @@ void UFirebaseRemoteConfig::SetDefaultsWithVariant(const TArray<FFirebaseConfigK
 
 	for (int32 i = 0; i < Defaults.Num(); ++i)
 	{
-		RawDefaults[i].key = Converters.Emplace_GetRef(*Defaults[i].Key).Get();
+		RawDefaults[i].key = Converters.Add_GetRef(FTCHARToUTF8(*Defaults[i].Key)).Get();
 		RawDefaults[i].value = Defaults[i].Value;
 	}
 
@@ -88,8 +88,8 @@ void UFirebaseRemoteConfig::SetDefaults(const TArray<FFirebaseConfigKeyValue>& D
 
 	for (int32 i = 0; i < Defaults.Num(); ++i)
 	{
-		RawDefaults[i].key   = Converters.Emplace_GetRef(*Defaults[i].Key).Get();
-		RawDefaults[i].value = Converters.Emplace_GetRef(*Defaults[i].Value).Get();
+		RawDefaults[i].key   = Converters.Add_GetRef(FTCHARToUTF8(*Defaults[i].Key)).Get();
+		RawDefaults[i].value = Converters.Add_GetRef(FTCHARToUTF8(*Defaults[i].Value)).Get();
 	}
 
 #if FIREBASE_SDK_SMALLER_THAN(8, 9, 0)

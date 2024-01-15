@@ -6,15 +6,7 @@
 
 #if WITH_FIREBASE_MESSAGING
 THIRD_PARTY_INCLUDES_START
-#if PLATFORM_WINDOWS
-#	include "Windows/AllowWindowsPlatformTypes.h"
-#	include "Windows/PreWindowsApi.h"
-#endif
 #	include "firebase/messaging.h"
-#if PLATFORM_WINDOWS
-#	include "Windows/PostWindowsApi.h"
-#	include "Windows/HideWindowsPlatformTypes.h"
-#endif
 THIRD_PARTY_INCLUDES_END
 #endif
 

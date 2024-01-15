@@ -275,7 +275,7 @@ FFirebaseVariant FMutableData::GetValue() const
 		return FFirebaseVariant();
 	}
 
-	return FFirebaseVariant(Mutable->value());
+	return Mutable->value();
 }
 
 FFirebaseVariant FMutableData::GetPriority()
@@ -389,7 +389,7 @@ FString UDataSnapshot::GetKey() const
 FFirebaseVariant UDataSnapshot::GetValue() const
 {
 #if WITH_FIREBASE_DATABASE
-	return FFirebaseVariant(Snapshot.value());
+	return Snapshot.value();
 #else
 	return {};
 #endif
@@ -398,7 +398,7 @@ FFirebaseVariant UDataSnapshot::GetValue() const
 FFirebaseVariant UDataSnapshot::GetPriority() const
 {
 #if WITH_FIREBASE_DATABASE
-	return FFirebaseVariant(Snapshot.priority());
+	return Snapshot.priority();
 #else
 	return {};
 #endif

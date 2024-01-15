@@ -613,20 +613,6 @@ UStoragePutFileWithMetadataProxy* UStoragePutFileWithMetadataProxy::PutFileWithM
 	Proxy->_Reference = StorageReference;
 	Proxy->_Path = Path;
 	Proxy->_Meta = Metadata;
-	Proxy->bUseUFS = false;
-
-	return Proxy;
-}
-
-UStoragePutFileWithMetadataProxy* UStoragePutFileWithMetadataProxy::PutFileUFS(UFirebaseStorageReference* StorageReference,
-	const FString& Path, const FFirebaseStorageMetadata& Metadata)
-{
-	ThisClass* const Proxy = NewObject<ThisClass>();
-
-	Proxy->_Reference = StorageReference;
-	Proxy->_Path = Path;
-	Proxy->_Meta = Metadata;
-	Proxy->bUseUFS = true;
 
 	return Proxy;
 }
@@ -635,20 +621,6 @@ void UStoragePutFileWithMetadataProxy::Activate()
 {
 #if WITH_FIREBASE_STORAGE
 	CHECK_REFERENCE(FFirebaseStorageMetadata());
-
-	if (bUseUFS)
-	{
-		_Reference->PutFileUFS
-		(
-			_Path,
-			_Meta,
-			Controller,
-			FFirebaseStorageMetadataCallback::CreateUObject(this, &ThisClass::OnActionOver),
-			FFirebaseStorageControllerCallback::CreateUObject(this, &ThisClass::OnProgressInternal),
-			FFirebaseStorageControllerCallback::CreateUObject(this, &ThisClass::OnPausedInternal)
-		);
-		return;
-	}
 
 	_Reference->PutFile
 	(

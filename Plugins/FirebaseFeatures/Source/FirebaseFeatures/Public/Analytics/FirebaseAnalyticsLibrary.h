@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "FirebaseSdk/FirebaseVariant.h"
 #include "FirebaseAnalyticsLibrary.generated.h"
 
 DECLARE_DELEGATE_OneParam(FFirebaseAnalyticsCallback, const int32);
@@ -49,14 +48,15 @@ public:
 	/// @param[in] parameter_name Name of the parameter to log.
 	/// For more information, see @ref Parameter.
 	/// @param[in] parameter_value Value of the parameter to log.
+	///
+	/// @if cpp_examples
+	/// @see LogEvent(const char*, const Parameter*, size_t)
+	/// @endif
 	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event (String)")
 	static void LogEventString(const FString& EventName, const FString& ParameterName, const FString& ParameterValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event (Float)")
 	static void LogEventFloat(const FString& EventName, const FString& ParameterName, const float ParameterValue);
-
-	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event (Double)")
-	static void LogEventDouble(const FString& EventName, const FString& ParameterName, const double ParameterValue);
 
 	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event (Int64)")
 	static void LogEventInt64(const FString& EventName, const FString& ParameterName, const int64 ParameterValue);
@@ -67,11 +67,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event")
 	static void LogEvent(const FString& EventName);
 	
-	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event with Parameters", meta = (DeprecatedFunction, DeprecationMessage = "Please use the function taking a map of variants instead."))
-	static void LogEventWithParameter(const FString& EventName, const TMap<FString, FString>& Parameters);
-
 	UFUNCTION(BlueprintCallable, Category = "Firebase|Analytics", DisplayName = "Log Event with Parameters")
-	static void LogEventWithParameters(const FString& EventName, const TMap<FString, FFirebaseVariant>& Parameters);
+	static void LogEventWithParameter(const FString& EventName, const TMap<FString, FString>& Parameters);
 
 	/// @brief Set a user property to the given value.
 	///

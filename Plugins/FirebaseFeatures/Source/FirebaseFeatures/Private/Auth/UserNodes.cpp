@@ -233,20 +233,7 @@ void ULinkAndRetrieveDataWithCredentialProxy::Activate()
 {
 	CHECK_USER(OnError, FSignInResult());
 
-
-#if PLATFORM_WINDOWS
-#	pragma warning(push)
-#	pragma warning(disable: 4996)
-#else
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
 	_User->LinkAndRetrieveDataWithCredential(Credential, FSignInCallback::CreateUObject(this, &ULinkAndRetrieveDataWithCredentialProxy::OnActionOver));
-#if PLATFORM_WINDOWS
-#	pragma warning(pop)
-#else
-#	pragma clang diagnostic pop
-#endif
 }
 
 void ULinkAndRetrieveDataWithCredentialProxy::OnActionOver(const EFirebaseAuthError Error, const FSignInResult& Result)

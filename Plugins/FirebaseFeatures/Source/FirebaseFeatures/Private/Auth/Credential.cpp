@@ -57,23 +57,8 @@ public:
 	virtual ~FPhoneProviderListener()
 	{
 	}
-
-#if FIREBASE_VERSION_MAJOR >= 11
-	virtual void OnVerificationCompleted(firebase::auth::PhoneAuthCredential credential) override
-	{
-		UE_LOG(LogFirebaseAuth, Log, TEXT("Phone provider verification completed."));
-
-		FCredentialCallback Cb = Cred;
-		FCredential Data(&credential);
-
-		AsyncTask(ENamedThreads::GameThread, [Cb, Data = MoveTemp(Data)]() -> void
-		{
-			Cb.ExecuteIfBound(Data);
-		});
-	}
-#endif
 	
-	virtual void OnVerificationCompleted(firebase::auth::Credential credential) override
+	virtual void OnVerificationCompleted(firebase::auth::Credential credential)
 	{
 		UE_LOG(LogFirebaseAuth, Log, TEXT("Phone provider verification completed."));
 
@@ -86,7 +71,7 @@ public:
 		});
 	}
 
-	virtual void OnVerificationFailed(const std::string& error) override
+	virtual void OnVerificationFailed(const std::string& error)
 	{
 		const FString Error = UTF8_TO_TCHAR(error.c_str());
 		UE_LOG(LogFirebaseAuth, Log, TEXT("Phone provider verification failed. Error: %s"), *Error);
@@ -99,7 +84,7 @@ public:
 		});
 	}
 
-	virtual void OnCodeSent(const std::string& verification_id, const TForceResendingToken& force_resending_token) override
+	virtual void OnCodeSent(const std::string& verification_id, const TForceResendingToken& force_resending_token)
 	{
 		UE_LOG(LogFirebaseAuth, Log, TEXT("Code for phone provider sent."));
 		
@@ -113,7 +98,7 @@ public:
 		});
 	}
 
-	virtual void OnCodeAutoRetrievalTimeOut(const std::string& verification_id) override
+	virtual void OnCodeAutoRetrievalTimeOut(const std::string& verification_id)
 	{
 		UE_LOG(LogFirebaseAuth, Log, TEXT("Code auto retrieval timeout for phone provider reached."));
 

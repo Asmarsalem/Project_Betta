@@ -5,19 +5,10 @@
 #include "CoreMinimal.h"
 #include "FirebaseSdk/FirebaseErrors.h"
 #include "Modules/ModuleManager.h"
-#include "Runtime/Launch/Resources/Version.h"
-
+#include "Launch/Resources/Version.h"
 
 THIRD_PARTY_INCLUDES_START
-#if PLATFORM_WINDOWS
-#	include "Windows/AllowWindowsPlatformTypes.h"
-#	include "Windows/PreWindowsApi.h"
-#endif
-#include "firebase/version.h"
-#if PLATFORM_WINDOWS
-#	include "Windows/PostWindowsApi.h"
-#	include "Windows/HideWindowsPlatformTypes.h"
-#endif
+#	include "firebase/version.h"
 THIRD_PARTY_INCLUDES_END
 
 
@@ -49,26 +40,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LogFirebaseStorage,		 Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogFirebaseCrashlytics,  Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogFirebasePerformance,  Log, All);
 
-// Force disable AdMob in shipping builds on desktop.
-#if UE_BUILD_SHIPPING
-#	if PLATFORM_DESKTOP
-#		ifdef WITH_FIREBASE_GMA
-#			undef WITH_FIREBASE_GMA
-#			define WITH_FIREBASE_GMA 0
-#		endif
-#		ifdef WITH_FIREBASE_ADMOB
-#			undef WITH_FIREBASE_ADMOB
-#			define WITH_FIREBASE_ADMOB 0
-#		endif
-#	endif
-#endif
-
 #ifndef WITH_FIREBASE_CRASHLYTICS
-#	define WITH_FIREBASE_CRASHLYTICS 0
-#endif
-
-#ifndef WITH_FIREBASE_APP_CHECK
-#	define WITH_FIREBASE_APP_CHECK 0
+#define WITH_FIREBASE_CRASHLYTICS 0
 #endif
 
 #ifndef WITH_FIREBASE_PERFORMANCE
@@ -83,12 +56,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LogFirebasePerformance,  Log, All);
 #	define WITH_FIREBASE_MESSAGING 0
 #endif
 
-#ifndef WITH_FIREBASE_GMA
-#	define WITH_FIREBASE_GMA 0
-#endif
-
 #ifndef WITH_FIREBASE_ADMOB
-#	define WITH_FIREBASE_ADMOB WITH_FIREBASE_GMA
+#	define WITH_FIREBASE_ADMOB 0
 #endif
 
 #ifndef WITH_FIREBASE_FIRESTORE
@@ -125,6 +94,16 @@ DECLARE_LOG_CATEGORY_EXTERN(LogFirebasePerformance,  Log, All);
 
 #ifndef WITH_FIREBASE_STORAGE
 #	define WITH_FIREBASE_STORAGE 0
+#endif
+
+#ifdef WITH_FIREBASE_ADMOB
+#	if WITH_FIREBASE_ADMOB
+		// Force disable AdMob on desktop.
+//#		undef  WITH_FIREBASE_ADMOB
+//#		define WITH_FIREBASE_ADMOB (PLATFORM_IOS || PLATFORM_ANDROID)
+#	endif
+#else
+#	define WITH_FIREBASE_ADMOB 0
 #endif
 
 // The class path of the game activity.
@@ -283,6 +262,7 @@ private:
 	void InitAuth();
 	void InitDatabase();
 	void InitDynamicLinks();
+	void InitFirestore();
 	void InitFunctions();
 	void InitMessaging();
 	void InitRemoteConfig();

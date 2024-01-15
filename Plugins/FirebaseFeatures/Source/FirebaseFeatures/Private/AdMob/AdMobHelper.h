@@ -6,8 +6,6 @@
 #include "AdMob/FbBannerView.h"
 #include "FirebaseFeatures.h"
 
-#if WITH_FIREBASE_ADMOB
-
 #if PLATFORM_ANDROID
 #	include "Android/AndroidJNI.h"
 #	include "Android/AndroidApplication.h"
@@ -19,9 +17,7 @@
 
 THIRD_PARTY_INCLUDES_START
 #	include "firebase/version.h"
-#	if FIREBASE_VERSION_MAJOR < 11
-#	    include "firebase/admob/types.h"
-#   endif
+#	include "firebase/admob/types.h"
 #	if FIREBASE_VERSION_MAJOR >= 9
 #		include "firebase/gma/types.h"
 #	endif
@@ -35,7 +31,7 @@ THIRD_PARTY_INCLUDES_END
 
 namespace firebase { namespace admob { struct AdRequest; } }
 
-#if FIREBASE_VERSION_MAJOR >= 9
+#if FIREBASE_VERSION_MAJOR >= 9 && false
 using FFirebaseAdRequest = firebase::gma::AdRequest;
 #else
 using FFirebaseAdRequest = firebase::admob::AdRequest;
@@ -47,8 +43,8 @@ namespace FAdMobHelper
 	{
 	public:
 		FInitAdRequestMemoryHandler(const FAdMobAdRequest& InReq);
-		FInitAdRequestMemoryHandler(const FInitAdRequestMemoryHandler&) = delete;
-		FInitAdRequestMemoryHandler(FInitAdRequestMemoryHandler&&) = delete;
+		FInitAdRequestMemoryHandler(const FInitAdRequestMemoryHandler& ) = delete;
+		FInitAdRequestMemoryHandler(const FInitAdRequestMemoryHandler&&) = delete;
 
 		~FInitAdRequestMemoryHandler();
 
@@ -66,6 +62,4 @@ namespace FAdMobHelper
 
 	void* GetAdParent();
 };
-
-#endif
 

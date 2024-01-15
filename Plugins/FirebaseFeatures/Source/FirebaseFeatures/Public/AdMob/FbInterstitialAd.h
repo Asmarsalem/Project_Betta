@@ -55,11 +55,9 @@ private:
 
 	FInterstitialAdOnPresentationStateChanged OnPresentationChangedEvent;
 
-#if WITH_FIREBASE_ADMOB
 	class FInterstitialAdListener* Listener;
 
 	FFirebaseInterstitial* InterstitialAd;
 
 	FAdMobAdRequestDataPtr RequestData;
-#endif
 };

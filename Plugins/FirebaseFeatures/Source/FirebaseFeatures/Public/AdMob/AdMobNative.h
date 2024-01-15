@@ -15,7 +15,6 @@ namespace firebase
 		namespace rewarded_video {}
 		using BannerView = AdView;
 		class AdRequest;
-		class RewardedAd;
 	}
 
 	namespace admob
@@ -30,12 +29,8 @@ namespace firebase
 #if FIREBASE_VERSION_MAJOR >= 9
 using FFirebaseBannerView 		 = firebase::gma::BannerView;
 using FFirebaseInterstitial      = firebase::gma::InterstitialAd;;
-#if FIREBASE_VERSION_MAJOR >= 11
-using FFirebaseRewardedVideo = firebase::gma::RewardedAd;
-#else
 // Still use old AdMob, API needs to change.
 namespace FFirebaseRewardedVideo = firebase::admob::rewarded_video; 
-#endif
 #else
 using FFirebaseBannerView 		 = firebase::admob::BannerView;
 using FFirebaseInterstitial      = firebase::admob::InterstitialAd;;

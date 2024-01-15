@@ -2,8 +2,6 @@
 
 #include "FirebaseFeatures.h"
 
-#include "Misc/MessageDialog.h"
-
 #if WITH_EDITOR
 #	include "ISettingsModule.h"
 #	include "ISettingsSection.h"
@@ -26,29 +24,17 @@
 
 THIRD_PARTY_INCLUDES_START
 #	include "firebase/app.h"
-#	include "firebase/version.h"
 #	include "firebase/log.h"
 #	if WITH_FIREBASE_AUTH
 #		include "firebase/auth.h"
-#	endif
-#	if WITH_FIREBASE_APP_CHECK
-#		if FIREBASE_VERSION_MAJOR >= 9
-#			include "firebase/app_check.h"
-#			include "firebase/app_check/play_integrity_provider.h"
-#			include "firebase/app_check/device_check_provider.h"
-#			include "firebase/app_check/app_attest_provider.h"
-#			include "firebase/app_check/debug_provider.h"
-#		endif
 #	endif
 #	if WITH_FIREBASE_ANALYTICS
 #		include "firebase/analytics.h"
 #	endif
 #	if WITH_FIREBASE_ADMOB
 #		include "AdMob/AdMobNative.h"
-#		if FIREBASE_VERSION_MAJOR < 11
-#    		include "firebase/admob.h"
-#		    include "firebase/admob/rewarded_video.h"
-#		endif
+#		include "firebase/admob.h"
+#		include "firebase/admob/rewarded_video.h"
 #		if FIREBASE_VERSION_MAJOR >= 9
 #			include "firebase/gma.h"
 #		endif	
@@ -61,6 +47,9 @@ THIRD_PARTY_INCLUDES_START
 #	endif
 #	if WITH_FIREBASE_DYNAMIC_LINKS
 #		include "firebase/dynamic_links.h"
+#	endif
+#	if WITH_FIREBASE_FIRESTORE
+#		include "firebase/firestore.h"
 #	endif
 #	if WITH_FIREBASE_MESSAGING
 #		include "firebase/messaging.h"
@@ -94,13 +83,7 @@ THIRD_PARTY_INCLUDES_END
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-#include "Firestore/FirestoreInternal.h"
-
 #define LOCTEXT_NAMESPACE "FFirebaseFeaturesModule"
-
-#if PLATFORM_WINDOWS && FIREBASE_VERSION_MAJOR >= 11
-#	pragma comment(lib, "Bcrypt.lib")
-#endif
 
 #if ENGINE_MAJOR_VERSION >= 5
 const char* const FirebaseFeaturesGameActivityPath = "com/epicgames/unreal/GameActivity";
@@ -331,71 +314,8 @@ static void DisablePixelStreamingPlugin()
 extern void FirebaseFeatures_OnOpenURL(UIApplication* application, NSURL* url, NSString* sourceApplication, id annotation);
 #endif
 
-#if WITH_FIREBASE_APP_CHECK
-static firebase::app_check::AppCheckProviderFactory* GetAppCheckProvider()
-{
-	const UFirebaseConfig* const Config = UFirebaseConfig::Get();
-#if PLATFORM_IOS
-	const EAppCheckProvider Provider = Config->iOSAppCheckProvider;
-#elif PLATFORM_ANDROID
-	const EAppCheckProvider Provider = Config->AndroidAppCheckProvider;
-#else
-	const EAppCheckProvider Provider = Config->DesktopAppCheckProvider;
-#endif
-
-	switch (Provider)
-	{
-	case EAppCheckProvider::Debug: 
-	{
-#if !UE_BUILD_SHIPPING
-		const FString DebugToken = FPlatformMisc::GetEnvironmentVariable(TEXT("FIREBASE_APPCHECK_DEBUG_TOKEN"));
-		if (DebugToken.IsEmpty())
-		{
-			FText Title = INVTEXT("AppCheck - Firebase Features");
-			FMessageDialog::Open(EAppMsgType::Ok,
-				INVTEXT(
-					"AppCheck is set to Debug but the AppCheck debug token is not set.\n"
-					"Set the environment variable FIREBASE_APPCHECK_DEBUG_TOKEN or \n"
-					"change the AppCheck provider to None to not use AppCheck."),
-#if (ENGINE_MAJOR_VERSION == 5 && ENGINE_MINOR_VERSION >= 3) || ENGINE_MAJOR_VERSION > 5
-				Title
-#else
-				&Title
-#endif
-			);
-			return nullptr;
-		}
-
-		auto AppCheckInstance = firebase::app_check::DebugAppCheckProviderFactory::GetInstance();
-		AppCheckInstance->SetDebugToken(TCHAR_TO_UTF8(*DebugToken));
-
-		return AppCheckInstance;
-#else
-		return nullptr;
-#endif
-	}
-	case EAppCheckProvider::None: return nullptr;
-	case EAppCheckProvider::PlayIntegrity: return firebase::app_check::PlayIntegrityProviderFactory::GetInstance();
-	case EAppCheckProvider::DeviceCheck: return firebase::app_check::DeviceCheckProviderFactory::GetInstance();
-	case EAppCheckProvider::AppAttest: return firebase::app_check::AppAttestProviderFactory::GetInstance();
-	}
-	return nullptr;
-}
-#endif
-
 void FFirebaseFeaturesModule::StartupModule()
 {
-	UE_LOG(LogFirebaseSdk, Log, TEXT("Firebase Features with Firebase C++ SDK %d.%d.%d"), 
-		FIREBASE_VERSION_MAJOR, FIREBASE_VERSION_MINOR, FIREBASE_VERSION_REVISION);
-
-#if WITH_FIREBASE_APP_CHECK
-	auto* const Provider = GetAppCheckProvider();
-	if (Provider)
-	{
-		firebase::app_check::AppCheck::SetAppCheckProviderFactory(Provider);
-	}
-#endif
-
 #if WITH_EDITOR
 	// Creates the Services folder if it doesn't exist.
 	{
@@ -405,6 +325,7 @@ void FFirebaseFeaturesModule::StartupModule()
 			IFileManager::Get().MakeDirectory(*FirebaseServicesDir);
 		}
 	}
+
 
 	// Register settings
 	ISettingsModule* const SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>(TEXT("Settings"));
@@ -482,8 +403,6 @@ void FFirebaseFeaturesModule::StartupModule()
 		if (FirebaseApp)
 		{
 #if WITH_EDITOR
-			const firebase::LogLevel DefaultLogLevel = firebase::LogLevel::kLogLevelDebug;
-#elif PLATFORM_IOS
 			const firebase::LogLevel DefaultLogLevel = firebase::LogLevel::kLogLevelWarning;
 #elif !UE_BUILD_SHIPPING
 			const firebase::LogLevel DefaultLogLevel = firebase::LogLevel::kLogLevelVerbose;
@@ -553,19 +472,14 @@ void FFirebaseFeaturesModule::StartupModule()
 	}
 #endif
 
-
 #if WITH_EDITOR
 	// Remove this call if you still want the AFS plugin in your project.
 	DisableAndroidFileServerPlugin();
 
-#if WITH_FIREBASE_FIRESTORE
-	if (UFirebaseConfig::Get()->bEnableFirestore) 
+	if (UFirebaseConfig::Get()->bEnableFirestore)
 	{
-		// Disables Pixel Streaming. 
-		// If you want to use Pixel Streaming, disable Firestore.
 		DisablePixelStreamingPlugin();
 	}
-#endif
 #endif
 }
 
@@ -582,21 +496,27 @@ void FFirebaseFeaturesModule::ShutdownModule()
 #endif // WITH_EDITOR
 
 #if WITH_EDITOR
-	GConfig->SetBool(TEXT("/Script/IOSRuntimeSettings.IOSRuntimeSettings"), TEXT("bEnableSignInWithAppleSupport"), 
-		!!WITH_FIREBASE_AUTH, FPaths::ProjectConfigDir() / TEXT("DefaultEngine.ini"));
-#endif
-
-#if WITH_EDITOR
 	if (IsCooking())
 	{
 		UE_LOG(LogFirebaseSdk, Log, TEXT("Cooking detected. Skipping Firebase cleanup."))
 	}
 	else
 #endif
-
 	if (firebase::App* const App = firebase::App::GetInstance())
 	{
-		FirestoreInternal::TerminateFirestore();
+#if WITH_FIREBASE_AUTH
+		if (firebase::auth::Auth::GetAuth(App))
+		{
+			delete firebase::auth::Auth::GetAuth(App);
+		}
+#endif 
+
+#if WITH_FIREBASE_FIRESTORE
+		if (firebase::firestore::Firestore::GetInstance(App))
+		{
+			delete firebase::firestore::Firestore::GetInstance(App);
+		}
+#endif 
 
 #if WITH_FIREBASE_DATABASE
 		auto* const DatabaseInstance = firebase::database::Database::GetInstance(App);
@@ -655,13 +575,6 @@ void FFirebaseFeaturesModule::ShutdownModule()
 		delete firebase::remote_config::RemoteConfig::GetInstance(App);
 #	endif
 #endif // WITH_FIREBASE_REMOTE_CONFIG
-
-#if WITH_FIREBASE_AUTH
-		if (firebase::auth::Auth::GetAuth(App))
-		{
-			delete firebase::auth::Auth::GetAuth(App);
-		}
-#endif
 		
 		delete App;
 
@@ -724,14 +637,12 @@ void FFirebaseFeaturesModule::InitializeFirebaseComponents()
 	
 	InitFirebaseModule(Analytics);
 	InitFirebaseModule(AdMob);
-
-	FirestoreInternal::InitializeFirestore();
-
 	InitFirebaseModule(Database);
 	InitFirebaseModule(Messaging);
 	InitFirebaseModule(Storage);
 	InitFirebaseModule(Functions);
 	InitFirebaseModule(RemoteConfig);
+	InitFirebaseModule(Firestore);
 
 	InitDynamicLinks();
 
@@ -867,6 +778,67 @@ void FFirebaseFeaturesModule::InitFunctions()
 #endif
 }
 
+void FFirebaseFeaturesModule::InitFirestore()
+{
+#if WITH_FIREBASE_FIRESTORE
+	UE_LOG(LogFirestore, Log, TEXT("Initializing Firestore."));
+
+	firebase::InitResult Result = firebase::InitResult::kInitResultFailedMissingDependency;
+
+#if UE_BUILD_SHIPPING
+	firebase::firestore::Firestore::set_log_level(firebase::LogLevel::kLogLevelInfo);
+#else
+	firebase::firestore::Firestore::set_log_level(firebase::LogLevel::kLogLevelVerbose);
+#endif
+
+	auto* const App = GetApp();
+
+	if (!App)
+	{
+		UE_LOG(LogFirestore, Error, TEXT("Firestore initialization skipped as the Firebase app is invalid."));
+		return;
+	}
+
+#if FIREBASE_VERSION_MAJOR <= 9 // Initialization happens later on newer versions.
+	firebase::firestore::Firestore* const Firestore = firebase::firestore::Firestore::GetInstance(App, &Result);
+
+	switch (Result)
+	{
+	case firebase::InitResult::kInitResultSuccess:
+	{
+		UE_LOG(LogFirestore, Log, TEXT("Firestore initialized."));
+
+		auto Settings = Firestore->settings();
+
+		auto* const Config = UFirebaseConfig::Get();
+
+		UE_LOG(LogFirestore, Log, TEXT("Firestore config: { persistence: %d, SSL: %d, Host: %s }."),
+			Config->bPersistenceEnabled, Config->bSslEnabled, *Config->Host);
+
+		Settings.set_persistence_enabled(Config->bPersistenceEnabled);
+		Settings.set_ssl_enabled(Config->bSslEnabled);
+
+		if (!Config->Host.IsEmpty())
+		{
+			Settings.set_host(TCHAR_TO_UTF8(*Config->Host));
+		}
+
+		Firestore->set_settings(Settings);
+
+	} break;
+	case firebase::InitResult::kInitResultFailedMissingDependency:
+		UE_LOG(LogFirestore, Error, TEXT("Firestore initialization failed: InitResultFailedMisingDependency."));
+		break;
+
+	default:
+		UE_LOG(LogFirestore, Warning, TEXT("Firestore initialization unknown result: %d."), (int32)Result);
+	};	
+#endif
+#else
+	UE_LOG(LogFirestore, Log, TEXT("Firestore is disabled, skipping initialization."));
+#endif // WITH_FIREBASE_FIRESTORE
+}
+
 void FFirebaseFeaturesModule::InitAnalytics()
 {
 #if WITH_FIREBASE_ANALYTICS
@@ -994,7 +966,7 @@ void FFirebaseFeaturesModule::InitDatabase()
 
 	if (!GetApp())
 	{
-		UE_LOG(LogFirebaseSdk, Error, TEXT("Can't initialize Database as app creation failed."));
+		UE_LOG(LogFirebaseSdk, Error, TEXT("Can't initialize Firestore as app creation failed."));
 		return;
 	}
 

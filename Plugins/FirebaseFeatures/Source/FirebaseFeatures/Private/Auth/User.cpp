@@ -3,7 +3,6 @@
 
 THIRD_PARTY_INCLUDES_START
 #	include "firebase/auth/user.h"
-#	include "firebase/auth/types.h"
 THIRD_PARTY_INCLUDES_END
 
 #include "Auth/AuthHelper.h"
@@ -46,11 +45,6 @@ FUserInfoInterface::FUserInfoInterface(firebase::auth::UserInfoInterface* const 
 	ProviderId  = UTF8_TO_TCHAR(Info->provider_id	().c_str());
 	PhoneNumber = UTF8_TO_TCHAR(Info->phone_number	().c_str());
 }
-#if FIREBASE_VERSION_MAJOR >= 11
-FUserInfoInterface::FUserInfoInterface(firebase::auth::UserInfoInterface Info) : FUserInfoInterface(&Info)
-{
-}
-#endif
 #endif
 
 UUser::UUser()
@@ -60,34 +54,6 @@ UUser::UUser()
 #endif
 {
 }
-
-UUser::UUser(FVTableHelper& Helper) 
-	: Super(Helper)
-#if WITH_FIREBASE_AUTH
-	, User(nullptr)
-#endif
-{
-
-}
-
-UUser::~UUser() = default;
-
-#if WITH_FIREBASE_AUTH
-void UUser::SetUser(firebase::auth::User* InUser)
-{
-#if FIREBASE_VERSION_MAJOR >= 11
-	User.Reset(InUser ? new firebase::auth::User(*InUser) : nullptr);
-#else
-	User = InUser;
-#endif
-}
-#if FIREBASE_VERSION_MAJOR >= 11
-void UUser::SetUser(const firebase::auth::User* InUser)
-{
-	User.Reset(InUser ? new firebase::auth::User(*InUser) : nullptr);
-}
-#endif
-#endif
 
 void UUser::GetToken(const bool bForceRefresh, FGetTokenCallback Callback)
 {
@@ -214,9 +180,7 @@ void UUser::ReauthenticateAndRetrieveData(const FCredential& Credential, const F
 		return;
 	}
 
-	User->ReauthenticateAndRetrieveData(*Credential.Credential)
-#if FIREBASE_VERSION_MAJOR >= 11
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::AuthResult>& Future) -> void
+	User->ReauthenticateAndRetrieveData(*Credential.Credential).OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to reauthenticate and retrieve data.");
 
@@ -228,20 +192,6 @@ void UUser::ReauthenticateAndRetrieveData(const FCredential& Credential, const F
 			Callback.ExecuteIfBound(Error, Result);
 		});
 	});
-#else
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
-	{
-		LOG_FUTURE_ERROR("Failed to reauthenticate and retrieve data.");
-
-		FSignInResult Result = FAuthHelper::ConvertSignInResult(Future.result());
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-
-		AsyncTask(ENamedThreads::GameThread, [Callback, Error, Result = MoveTemp(Result)]()-> void
-		{
-			Callback.ExecuteIfBound(Error, Result);
-		});
-	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, {});
 #endif
@@ -259,14 +209,7 @@ void UUser::ReauthenticateWithProvider(const FFederatedAuthProvider& Provider, c
 		return;
 	}
 
-#if FIREBASE_VERSION_MAJOR >= 11
-	using FResult = firebase::auth::AuthResult;
-#else
-	using FResult = firebase::auth::SignInResult;
-#endif
-
-	User->ReauthenticateWithProvider(Provider.AuthProvider.Get())
-		.OnCompletion([Callback](const firebase::Future<FResult>& Future) -> void
+	User->ReauthenticateWithProvider(Provider.AuthProvider.Get()).OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to reauthenticate and retrieve data.");
 
@@ -337,9 +280,7 @@ void UUser::LinkWithCredential(const FCredential& Credential, const FSignInUserC
 		return;
 	}
 
-	User->LinkWithCredential(*Credential.Credential)
-#if FIREBASE_VERSION_MAJOR >= 11
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::AuthResult>& Future) -> void
+	User->LinkWithCredential(*Credential.Credential).OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to link with credential.");
 
@@ -352,33 +293,12 @@ void UUser::LinkWithCredential(const FCredential& Credential, const FSignInUserC
 			if (Future.error() == (int32)EFirebaseAuthError::None && Future.result())
 			{
 				NewUser = NewObject<UUser>();
-				NewUser->SetUser(&Future.result()->user);
+				NewUser->User = *Future.result();
 			}
 
 			Callback.ExecuteIfBound(Error, NewUser);
 		});
 	});
-#else
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
-	{
-		LOG_FUTURE_ERROR("Failed to link with credential.");
-
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-
-		AsyncTask(ENamedThreads::GameThread, [Callback, Error, Future]()-> void
-		{
-			UUser* NewUser = nullptr;
-				
-			if (Future.error() == (int32)EFirebaseAuthError::None && Future.result())
-			{
-				NewUser = NewObject<UUser>();
-				NewUser->SetUser(*Future.result());
-			}
-
-			Callback.ExecuteIfBound(Error, NewUser);
-		});
-	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, {});
 #endif
@@ -396,20 +316,7 @@ void UUser::LinkAndRetrieveDataWithCredential(const FCredential& Credential, con
 		return;
 	}
 
-#if PLATFORM_WINDOWS
-#	pragma warning(push)
-#	pragma warning(disable: 4996)
-#else
-#	pragma clang diagnostic push
-#	pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#endif
-	User->LinkAndRetrieveDataWithCredential(*Credential.Credential)
-#if PLATFORM_WINDOWS
-#	pragma warning(pop)
-#else
-#	pragma clang diagnostic pop
-#endif
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
+	User->LinkAndRetrieveDataWithCredential(*Credential.Credential).OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to link and retrieve data with credential.");
 
@@ -438,15 +345,7 @@ void UUser::LinkWithProvider(const FFederatedAuthProvider& Provider, const FSign
 		return;
 	}
 
-
-#if FIREBASE_VERSION_MAJOR >= 11
-	using FResult = firebase::auth::AuthResult;
-#else
-	using FResult = firebase::auth::SignInResult;
-#endif
-
-	User->LinkWithProvider(Provider.AuthProvider.Get())
-		.OnCompletion([Callback](const firebase::Future<FResult>& Future) -> void
+	User->LinkWithProvider(Provider.AuthProvider.Get()).OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to link with provider and retrieve data with credential.");
 
@@ -468,9 +367,7 @@ void UUser::Unlink(const FString& Provider, const FSignInUserCallback& Callback)
 #if WITH_FIREBASE_AUTH
 	USER_CHECK_VALIDITY((void)Callback.ExecuteIfBound(EFirebaseAuthError::UserNotFound, nullptr));
 
-	User->Unlink(TCHAR_TO_UTF8(*Provider))
-#if FIREBASE_VERSION_MAJOR >= 11
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::AuthResult>& Future) -> void
+	User->Unlink(TCHAR_TO_UTF8(*Provider)).OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to unlink provider.");
 		
@@ -483,33 +380,12 @@ void UUser::Unlink(const FString& Provider, const FSignInUserCallback& Callback)
 			if (Future.error() == (int32)EFirebaseAuthError::None && Future.result())
 			{
 				NewUser = NewObject<UUser>();
-				NewUser->SetUser(&Future.result()->user);
+				NewUser->User = *Future.result();
 			}
 
 			Callback.ExecuteIfBound(Error, NewUser);
 		});
 	});
-#else
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
-	{
-		LOG_FUTURE_ERROR("Failed to unlink provider.");
-		
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-
-		AsyncTask(ENamedThreads::GameThread, [Callback, Error, Future]()-> void
-		{
-			UUser* NewUser = nullptr;
-				
-			if (Future.error() == (int32)EFirebaseAuthError::None && Future.result())
-			{
-				NewUser = NewObject<UUser>();
-				NewUser->SetUser(*Future.result());
-			}
-
-			Callback.ExecuteIfBound(Error, NewUser);
-		});
-	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, {});
 #endif
@@ -527,30 +403,7 @@ void UUser::UpdatePhoneNumberCredential(const FCredential& Credential, const FSi
 		return;
 	}
 
-#if FIREBASE_VERSION_MAJOR >= 11
-	User->UpdatePhoneNumberCredential(*(firebase::auth::PhoneAuthCredential*)Credential.Credential.Get())
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User>& Future) -> void
-	{
-		LOG_FUTURE_ERROR("Failed to update phone number credential.");
-		
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-
-		AsyncTask(ENamedThreads::GameThread, [Callback, Error, Future]()-> void
-		{
-			UUser* NewUser = nullptr;
-				
-			if (Future.error() == (int32)EFirebaseAuthError::None && Future.result() && Future.result()->is_valid())
-			{
-				NewUser = NewObject<UUser>();
-				NewUser->SetUser(Future.result());
-			}
-
-			Callback.ExecuteIfBound(Error, NewUser);
-		});
-	});
-#else
-	User->UpdatePhoneNumberCredential(*Credential.Credential)
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
+	User->UpdatePhoneNumberCredential(*Credential.Credential).OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
 	{
 		LOG_FUTURE_ERROR("Failed to update phone number credential.");
 		
@@ -563,13 +416,12 @@ void UUser::UpdatePhoneNumberCredential(const FCredential& Credential, const FSi
 			if (Future.error() == (int32)EFirebaseAuthError::None && Future.result())
 			{
 				NewUser = NewObject<UUser>();
-				NewUser->SetUser(*Future.result());
+				NewUser->User = *Future.result();
 			}
 
 			Callback.ExecuteIfBound(Error, NewUser);
 		});
 	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, {});
 #endif

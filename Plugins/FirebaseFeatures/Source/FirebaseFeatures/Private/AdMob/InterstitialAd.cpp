@@ -4,9 +4,7 @@
 
 THIRD_PARTY_INCLUDES_START
 #	include "firebase/version.h"
-#	if FIREBASE_VERSION_MAJOR < 11
-#    	include "firebase/admob/interstitial_ad.h"
-#   endif
+#	include "firebase/admob/interstitial_ad.h"
 #	if FIREBASE_VERSION_MAJOR >= 9
 #		include "firebase/gma/interstitial_ad.h"
 #	endif
@@ -38,7 +36,6 @@ public:
 	{
 	}
 
-#if FIREBASE_VERSION_MAJOR < 11
 	virtual void OnPresentationStateChanged
 	(
 		firebase::admob::InterstitialAd* interstitial_ad,
@@ -55,7 +52,6 @@ public:
 			);
 		}
 	}
-#endif
 
 	virtual ~FInterstitialAdListener()
 	{
@@ -93,19 +89,15 @@ private:
 
 UInterstitialAd::UInterstitialAd(FVTableHelper& Helper) 
 	: Super(Helper)
-#if WITH_FIREBASE_ADMOB
 	, Listener(nullptr)
 	, InterstitialAd(nullptr)
-#endif
 {
 
 }
 
 UInterstitialAd::UInterstitialAd()
-#if WITH_FIREBASE_ADMOB
 	: Listener(nullptr)
 	, InterstitialAd(nullptr)
-#endif
 {
 }
 

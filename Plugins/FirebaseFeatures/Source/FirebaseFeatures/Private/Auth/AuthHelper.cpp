@@ -77,35 +77,6 @@ firebase::auth::User::UserProfile FUserProfileDataManager::Get()
 	return Profile;
 }
 
-#if FIREBASE_VERSION_MAJOR >= 11
-FSignInResult FAuthHelper::ConvertSignInResult(const firebase::auth::AuthResult* const SignInResult)
-{
-	FSignInResult Result;
-	if (SignInResult)
-	{
-		if (SignInResult->user.is_valid())
-		{
-			Result.User = NewObject<UUser>();
-			Result.User->SetUser(&SignInResult->user);
-		}
-
-
-		for (const auto& Profile : SignInResult->additional_user_info.profile)
-		{
-			Result.Info.Profile.Add(FFirebaseVariant(Profile.first), FFirebaseVariant(Profile.second));
-		}
-
-		if (!SignInResult->additional_user_info.provider_id.empty())
-			Result.Info.ProviderId = UTF8_TO_TCHAR(SignInResult->additional_user_info.provider_id.c_str());
-		if (!SignInResult->additional_user_info.user_name.empty())
-			Result.Info.UserName = UTF8_TO_TCHAR(SignInResult->additional_user_info.user_name.c_str());
-		Result.Info.UpdatedCredential = FCredential(new firebase::auth::Credential(SignInResult->additional_user_info.updated_credential));
-	}
-
-	return Result;
-}
-#endif
-
 FSignInResult FAuthHelper::ConvertSignInResult(const firebase::auth::SignInResult* const SignInResult)
 {
 	FSignInResult Result;
@@ -115,7 +86,7 @@ FSignInResult FAuthHelper::ConvertSignInResult(const firebase::auth::SignInResul
 		if (SignInResult->user)
 		{
 			Result.User = NewObject<UUser>();
-			Result.User->SetUser(SignInResult->user);
+			Result.User->User = SignInResult->user;
 		}
 
 		Result.Meta.CreationTtimestamp  = SignInResult->meta.creation_timestamp;
@@ -123,37 +94,15 @@ FSignInResult FAuthHelper::ConvertSignInResult(const firebase::auth::SignInResul
 
 		for (const auto& Profile : SignInResult->info.profile)
 		{
-			Result.Info.Profile.Add(FFirebaseVariant(Profile.first), FFirebaseVariant(Profile.second));
+			Result.Info.Profile.Add(Profile.first, Profile.second);
 		}
 
-		if (!SignInResult->info.provider_id.empty())
-			Result.Info.ProviderId			= UTF8_TO_TCHAR(SignInResult->info.provider_id.c_str());
-		if (!SignInResult->info.user_name.empty())
-			Result.Info.UserName			= UTF8_TO_TCHAR(SignInResult->info.user_name.c_str());
+		Result.Info.ProviderId			= UTF8_TO_TCHAR(SignInResult->info.provider_id.c_str());
+		Result.Info.UserName			= UTF8_TO_TCHAR(SignInResult->info.user_name.c_str());
 		Result.Info.UpdatedCredential	= FCredential(new firebase::auth::Credential(SignInResult->info.updated_credential));
 	}
 
 	return Result;
-}
-
-#if FIREBASE_VERSION_MAJOR >= 11
-UUser* FAuthHelper::ConvertUser(const firebase::auth::AuthResult* User)
-{
-	UUser* _User = nullptr;
-
-	if (User && User->user.is_valid())
-	{
-		_User = NewObject<UUser>();
-		_User->SetUser(&User->user);
-	}
-
-	return _User;
-}
-#endif
-
-UUser* FAuthHelper::ConvertUser(firebase::auth::User* const * const User)
-{
-	return ConvertUser(User ? *User : nullptr);
 }
 
 UUser* FAuthHelper::ConvertUser(firebase::auth::User* const User)
@@ -163,7 +112,7 @@ UUser* FAuthHelper::ConvertUser(firebase::auth::User* const User)
 	if (User)
 	{
 		_User = NewObject<UUser>();
-		_User->SetUser(User);
+		_User->User = User;
 	}
 
 	return _User;

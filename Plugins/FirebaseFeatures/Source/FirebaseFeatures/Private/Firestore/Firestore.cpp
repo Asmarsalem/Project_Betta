@@ -229,31 +229,9 @@ FWriteBatch::FWriteBatch()
 
 }
 
-
-FWriteBatch::FWriteBatch(FWriteBatch&& Other) : FWriteBatch()
-{
-#if WITH_FIREBASE_FIRESTORE
-	*Batch = MoveTemp(*Other.Batch);
-#endif
-}
-
-FWriteBatch::FWriteBatch(const FWriteBatch& Other) : FWriteBatch()
-{
-#if WITH_FIREBASE_FIRESTORE
-	*Batch = *Other.Batch;
-#endif
-}
-
 FWriteBatch::~FWriteBatch()
 {
-}
 
-FWriteBatch& FWriteBatch::operator=(FWriteBatch&& Other)
-{
-#if WITH_FIREBASE_FIRESTORE
-	*Batch = MoveTemp(*Other.Batch);
-#endif // WITH_FIREBASE_FIRESTORE
-	return *this;
 }
 
 FWriteBatch& FWriteBatch::operator=(const FWriteBatch& Other)
@@ -392,19 +370,6 @@ firebase::firestore::Firestore* UFirestore::GetFirestore()
 	return Instance;
 }
 #endif // WITH_FIREBASE_FIRESTORE
-
-FWriteBatch UFirestore::CreateBatch()
-{
-	FWriteBatch Batch;
-#if WITH_FIREBASE_FIRESTORE
-	auto Firestore = GetFirestore();
-	if (Firestore)
-	{
-		*Batch.Batch.Get() = Firestore->batch();
-	}
-#endif
-	return Batch;
-}
 
 UFirestoreCollectionReference* UFirestore::GetCollection(const FString& CollectionPath)
 {
@@ -606,15 +571,15 @@ void UFirestore::WaitForPendingWrites(const FFirestoreCallback& Callback)
 #endif // WITH_FIREBASE_FIRESTORE
 }
 
-void UFirestore::SetPersistenceEnabled(const bool bEnabled)
-{
-#if WITH_FIREBASE_FIRESTORE
-	auto* const Firestore = GetFirestore();
-
-	auto settings = Firestore->settings();
-
-	settings.set_persistence_enabled(bEnabled);
-
-	Firestore->set_settings(MoveTemp(settings));
-#endif
-}
+//void UFirestore::SetPersistenceEnabled(const bool bEnabled)
+//{
+//#if WITH_FIREBASE_FIRESTORE
+//	auto* const Firestore = GetFirestore();
+//
+//	auto settings = Firestore->settings();
+//
+//	settings.set_persistence_enabled(bEnabled);
+//
+//	Firestore->set_settings(MoveTemp(settings));
+//#endif
+//}

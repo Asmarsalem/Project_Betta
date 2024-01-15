@@ -39,14 +39,7 @@ private:
 
 public:
 	static FSignInResult ConvertSignInResult(const firebase::auth::SignInResult* const SignInResult);
-#if FIREBASE_VERSION_MAJOR >= 11
-	static FSignInResult ConvertSignInResult(const firebase::auth::AuthResult* const SignInResult);
-#endif
 
 	static UUser* ConvertUser(firebase::auth::User* const User);
-	static UUser* ConvertUser(firebase::auth::User* const * const User);
-#if FIREBASE_VERSION_MAJOR >= 11
-	static UUser* ConvertUser(const firebase::auth::AuthResult* User);
-#endif
 };
 #endif

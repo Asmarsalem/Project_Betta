@@ -151,31 +151,17 @@ firebase::auth::Auth* FAuth::GetAuth()
 }
 #endif
 
-template<class T>
-static bool IsUserValid(const T& User)
-{
-#if FIREBASE_VERSION_MAJOR < 11
-	return !!User;
-#else
-	return User.is_valid();
-#endif
-}
-
 UUser* FAuth::CurrentUser()
 {
 #if WITH_FIREBASE_AUTH
-	auto Current = GetAuth()->current_user();
-	if (!IsUserValid(Current))
+	firebase::auth::User* const Current = GetAuth()->current_user();
+	if (!Current)
 	{
 		return nullptr;
 	}
 
 	UUser* const User = NewObject<UUser>();
-#if FIREBASE_VERSION_MAJOR < 11
-	User->SetUser(Current);
-#else
-	User->SetUser(&Current);
-#endif
+	User->User = Current;
 
 	return User;
 #else
@@ -222,35 +208,7 @@ void FAuth::FetchProvidersForEmail(const FString& Email, const FFetchProvidersFo
 void FAuth::SignInWithCustomToken(const FString& Token, const FSignInUserCallback& Callback)
 {
 #if WITH_FIREBASE_AUTH
-	GetAuth()->SignInWithCustomToken(TCHAR_TO_UTF8(*Token))
-#if FIREBASE_VERSION_MAJOR >= 11
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::AuthResult>& Future) -> void
-	{
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-
-		if (Error != EFirebaseAuthError::None)
-		{
-			UE_LOG(LogFirebaseAuth, Error, TEXT("Failed to sign in with custom token. Code: %d. Message: %s"), Error, UTF8_TO_TCHAR(Future.error_message()));
-		}
-
-		if (Callback.IsBound())
-		{
-			AsyncTask(ENamedThreads::GameThread, [Callback, Future]() -> void
-			{
-				UUser* User = nullptr;
-
-				if (Future.result())
-				{
-					User = NewObject<UUser>();
-					User->SetUser(&Future.result()->user);
-				}
-
-				Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), User);
-			});
-		}
-	});
-#else
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
+	GetAuth()->SignInWithCustomToken(TCHAR_TO_UTF8(*Token)).OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
 	{
 		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
 
@@ -275,7 +233,6 @@ void FAuth::SignInWithCustomToken(const FString& Token, const FSignInUserCallbac
 			});
 		}
 	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, nullptr);
 #endif
@@ -291,42 +248,7 @@ void FAuth::SignInWithCredential(const FCredential& Credential, const FSignInUse
 		return;
 	}
 
-	GetAuth()->SignInWithCredential(*Credential.Credential)
-#if FIREBASE_VERSION_MAJOR >= 11
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User>& Future) -> void
-	{
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-
-		if (Error != EFirebaseAuthError::None)
-		{
-			const FString ErrorMessage = FString::Printf(TEXT("Failed to sign in with credential. Code: %d. Message: %s"), 
-				Future.error(), UTF8_TO_TCHAR(Future.error_message()));
-
-			UE_LOG(LogFirebaseAuth, Error, TEXT("%s"), *ErrorMessage);
-
-#if PLATFORM_ANDROID
-			FirebaseUtils::NativeLog(FBLog_Error, ErrorMessage);
-#endif
-		}
-
-		if (Callback.IsBound())
-		{
-			AsyncTask(ENamedThreads::GameThread, [Callback, Future]() -> void
-			{
-				UUser* User = nullptr;
-
-				if (Future.result() && Future.result()->is_valid())
-				{
-					User = NewObject<UUser>();
-					User->SetUser(Future.result());
-				}
-
-				Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), User);
-			});
-		}
-	});
-#else
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
+	GetAuth()->SignInWithCredential(*Credential.Credential).OnCompletion([Callback](const firebase::Future<firebase::auth::User*>& Future) -> void
 	{
 		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
 
@@ -351,14 +273,13 @@ void FAuth::SignInWithCredential(const FCredential& Credential, const FSignInUse
 				if (Future.result() && *Future.result())
 				{
 					User = NewObject<UUser>();
-					User->SetUser(*Future.result());
+					User->User = *Future.result();
 				}
 
 				Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), User);
 			});
 		}
 	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, nullptr);
 #endif
@@ -380,30 +301,7 @@ void FAuth::SignInWithProvider(const FFederatedAuthProvider& AuthProvider, const
 		return;
 	}
 
-	GetAuth()->SignInWithProvider(AuthProvider.AuthProvider.Get())
-#if FIREBASE_VERSION_MAJOR >= 11
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::AuthResult>& Future) -> void
-	{
-		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
-		if (Error != EFirebaseAuthError::None)
-		{
-			UE_LOG(LogFirebaseAuth, Error, TEXT("Failed to sign in with provider. Code: %d. Message: %s"), Future.error(), UTF8_TO_TCHAR(Future.error_message()))
-		}
-
-		firebase::auth::AuthResult RawResult;
-		
-		if (Future.result())
-		{
-			RawResult = *Future.result();
-		}
-
-		AsyncTask(ENamedThreads::GameThread, [Callback, Error, RawResult = MoveTemp(RawResult)]() -> void
-		{
-			Callback.ExecuteIfBound(Error, FAuthHelper::ConvertSignInResult(&RawResult));
-		});
-	});
-#else
-		.OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
+	GetAuth()->SignInWithProvider(AuthProvider.AuthProvider.Get()).OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
 	{
 		const EFirebaseAuthError Error = (EFirebaseAuthError)Future.error();
 		if (Error != EFirebaseAuthError::None)
@@ -423,7 +321,6 @@ void FAuth::SignInWithProvider(const FFederatedAuthProvider& AuthProvider, const
 			Callback.ExecuteIfBound(Error, FAuthHelper::ConvertSignInResult(&RawResult));
 		});
 	});
-#endif
 #else
 	Callback.ExecuteIfBound(EFirebaseAuthError::ApiNotAvailable, {});
 #endif
@@ -439,15 +336,7 @@ void FAuth::SignInAndRetrieveDataWithCredential(const FCredential& Credential, c
 		return;
 	}
 
-#if FIREBASE_VERSION_MAJOR >= 11
-	using FResult = firebase::auth::AuthResult;
-#else
-	using FResult = firebase::auth::SignInResult;
-#endif
-
-
-	GetAuth()->SignInAndRetrieveDataWithCredential(*Credential.Credential)
-		.OnCompletion([Callback](const firebase::Future<FResult>& Future) -> void
+	GetAuth()->SignInAndRetrieveDataWithCredential(*Credential.Credential).OnCompletion([Callback](const firebase::Future<firebase::auth::SignInResult>& Future) -> void
 	{
 		if (Future.error() != (int32)EFirebaseAuthError::None)
 		{
@@ -467,14 +356,7 @@ void FAuth::SignInAndRetrieveDataWithCredential(const FCredential& Credential, c
 void FAuth::SignInAnonymously(const FSignInUserCallback& Callback)
 {
 #if WITH_FIREBASE_AUTH
-
-#if FIREBASE_VERSION_MAJOR >= 11
-	using FResult = firebase::auth::AuthResult;
-#else
-	using FResult = firebase::auth::User*;
-#endif
-
-	GetAuth()->SignInAnonymously().OnCompletion([Callback](const firebase::Future<FResult> Future) -> void
+	GetAuth()->SignInAnonymously().OnCompletion([Callback](const firebase::Future<firebase::auth::User*> Future) -> void
 	{
 		if (Future.error() != (int32)EFirebaseAuthError::None)
 		{
@@ -483,7 +365,7 @@ void FAuth::SignInAnonymously(const FSignInUserCallback& Callback)
 		
 		AsyncTask(ENamedThreads::GameThread, [Callback, Future]()->void
 		{
-			Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), FAuthHelper::ConvertUser(Future.result() ? Future.result() : nullptr));
+			Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), FAuthHelper::ConvertUser(Future.result() ? *Future.result() : nullptr));
 		});
 	});
 #else
@@ -494,15 +376,7 @@ void FAuth::SignInAnonymously(const FSignInUserCallback& Callback)
 void FAuth::SignInWithEmailAndPassword(const FString& Email, const FString& Password, const FSignInUserCallback& Callback)
 {
 #if WITH_FIREBASE_AUTH
-
-#if FIREBASE_VERSION_MAJOR >= 11
-	using FResult = firebase::auth::AuthResult;
-#else
-	using FResult = firebase::auth::User*;
-#endif
-
-	GetAuth()->SignInWithEmailAndPassword(TCHAR_TO_UTF8(*Email), TCHAR_TO_UTF8(*Password))
-		.OnCompletion([Callback](const firebase::Future<FResult> Future) -> void
+	GetAuth()->SignInWithEmailAndPassword(TCHAR_TO_UTF8(*Email), TCHAR_TO_UTF8(*Password)).OnCompletion([Callback](const firebase::Future<firebase::auth::User*> Future) -> void
 	{
 		if (Future.error() != (int32)EFirebaseAuthError::None)
 		{
@@ -511,8 +385,7 @@ void FAuth::SignInWithEmailAndPassword(const FString& Email, const FString& Pass
 		
 		AsyncTask(ENamedThreads::GameThread, [Callback, Future]() -> void
 		{
-			Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), 
-				FAuthHelper::ConvertUser(Future.result() ? Future.result() : nullptr));
+			Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), FAuthHelper::ConvertUser(Future.result() ? *Future.result() : nullptr));
 		});
 	});
 #else
@@ -523,15 +396,7 @@ void FAuth::SignInWithEmailAndPassword(const FString& Email, const FString& Pass
 void FAuth::CreateUserWithEmailAndPassword(const FString& Email, const FString& Password, const FSignInUserCallback& Callback)
 {
 #if WITH_FIREBASE_AUTH
-
-#if FIREBASE_VERSION_MAJOR >= 11
-	using FResult = firebase::auth::AuthResult;
-#else
-	using FResult = firebase::auth::User*;
-#endif
-
-	GetAuth()->CreateUserWithEmailAndPassword(TCHAR_TO_UTF8(*Email), TCHAR_TO_UTF8(*Password))
-		.OnCompletion([Callback](const firebase::Future<FResult> Future) -> void
+	GetAuth()->CreateUserWithEmailAndPassword(TCHAR_TO_UTF8(*Email), TCHAR_TO_UTF8(*Password)).OnCompletion([Callback](const firebase::Future<firebase::auth::User*> Future) -> void
 	{
 		if (Future.error() != (int32)EFirebaseAuthError::None)
 		{
@@ -540,7 +405,7 @@ void FAuth::CreateUserWithEmailAndPassword(const FString& Email, const FString& 
 		
 		AsyncTask(ENamedThreads::GameThread, [Callback, Future]() -> void
 		{
-			Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), FAuthHelper::ConvertUser(Future.result() ? Future.result() : nullptr));
+			Callback.ExecuteIfBound((EFirebaseAuthError)Future.error(), FAuthHelper::ConvertUser(Future.result() ? *Future.result() : nullptr));
 		});
 	});
 #else

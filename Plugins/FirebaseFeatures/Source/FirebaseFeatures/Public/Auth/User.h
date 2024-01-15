@@ -55,9 +55,6 @@ private:
 
 #if WITH_FIREBASE_AUTH
 	FUserInfoInterface(firebase::auth::UserInfoInterface* const Info);
-#if FIREBASE_VERSION_MAJOR >= 11
-	FUserInfoInterface(firebase::auth::UserInfoInterface Info);
-#endif
 #endif
 
 public:
@@ -105,8 +102,6 @@ private:
 
 public:
 	UUser();
-	UUser(FVTableHelper&);
-	~UUser();
 
 	/// The Java Web Token (JWT) that can be used to identify the user to
 	/// the backend.
@@ -179,7 +174,6 @@ public:
 	/// is already linked with another id from the same provider.
 	/// Data from the Identity Provider used to sign-in is returned in the
 	/// AdditionalUserInfo inside SignInResult.
-	[[ deprecated ]]
 	void LinkAndRetrieveDataWithCredential(const FCredential& Credential, const FSignInCallback& Callback);
 
 	/// Links this user with a federated auth provider.
@@ -253,13 +247,6 @@ public:
 
 private:
 #if WITH_FIREBASE_AUTH
-	void SetUser(firebase::auth::User* InUser);
-
-#if FIREBASE_VERSION_MAJOR >= 11
-	void SetUser(const firebase::auth::User* InUser);
-	TUniquePtr<firebase::auth::User> User;
-#else
 	firebase::auth::User* User;
-#endif
 #endif
 };
