@@ -6,6 +6,8 @@
 #include "GlobalMacro.h"
 #include "GenericPlatform/HttpRequestImpl.h"
 #include "PlayFab/Classes/PlayFabClientModels.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Windows/WindowsPlatformProcess.h"
 #include "PlayFab/Classes/PlayFabClientAPI.h"
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
@@ -74,6 +76,7 @@ void UGi_TopDownShooter_GameInstance::CheckInternetConnection(FCheckInternetConn
 		GetResponse.ExecuteIfBound(bConnectedSuccessfully);
 	});
 	HttpRequest->ProcessRequest();
+	
 	
 }
 
