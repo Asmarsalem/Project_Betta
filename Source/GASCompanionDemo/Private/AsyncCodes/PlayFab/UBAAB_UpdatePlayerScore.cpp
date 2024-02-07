@@ -3,11 +3,13 @@
 
 #include "AsyncCodes/PlayFab/UBAAB_UpdatePlayerScore.h"
 
+#include "AbilitySystemComponent.h"
 #include "HttpModule.h"
 #include "PlayFabCommonSettings.h"
+#include "Attributes/XPAttributeSet.h"
 #include "Interfaces/IHttpResponse.h"
 
-UUBAAB_UpdatePlayerScore* UUBAAB_UpdatePlayerScore::UpdatePlayerScore(float Score)
+UUBAAB_UpdatePlayerScore* UUBAAB_UpdatePlayerScore::UpdatePlayerScore(UAbilitySystemComponent* Ability)
 {
 	UUBAAB_UpdatePlayerScore* UpdatePlayerScoreInstance=NewObject<UUBAAB_UpdatePlayerScore>();
 	FHttpModule& HttpModule=FHttpModule::Get();
@@ -18,7 +20,7 @@ UUBAAB_UpdatePlayerScore* UUBAAB_UpdatePlayerScore::UpdatePlayerScore(float Scor
 	Request->SetHeader("X-Authorization",SessionTicket);
 	Request->SetHeader("Content-Type","application/json");
 	FString StaticName="TDleaderboard";
-	int32 ScoreInt = FMath::RoundToInt(Score);
+	int32 ScoreInt = Ability->GetNumericAttribute(UXPAttributeSet::GetCurrentXPAttribute());
 	FString JsonString = FString::Printf(TEXT("{\"Statistics\": [{\"StatisticName\": \"%s\", \"Value\": \"%d\"}]}"), *StaticName,ScoreInt);
 	Request->SetContentAsString(JsonString);
 	Request->OnProcessRequestComplete().BindUObject(UpdatePlayerScoreInstance,&UUBAAB_UpdatePlayerScore::OnResponse);
