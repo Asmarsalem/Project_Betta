@@ -5,16 +5,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "core/GameMode/GM_TestGameMood.h"
-
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"
-#include "GlobalMacro.h"
 #include "NavigationSystem.h"
 #include "Attributes/XPAttributeSet.h"
 #include "Components/TimelineComponent.h"
 #include "Engine/CurveTable.h"
-#include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 float timeLinePreviousValue;
 bool reverse;
@@ -22,6 +17,7 @@ bool reverse;
 void AGM_TestGameMood::BeginPlay()
 {
 	Super::BeginPlay();
+	SetAiArrayRandLength();
 	FTimerDelegate Timerd=FTimerDelegate::CreateLambda([this]()
 	{
 		if (IsValid(this))
@@ -158,5 +154,41 @@ bool AGM_TestGameMood::GetCurve(TSubclassOf<AActor> ArrayType,UCurveTable* Table
 
 		}
 	return false;
+}
+
+TSubclassOf<APawn> AGM_TestGameMood::GetRandomAi()
+{
+	if(Ai.IsEmpty())
+	{
+		if(!SetAiArrayRandLength())
+		{
+			return nullptr;
+		}
+	}
+	int AiIndex = 0;
+	int RandomNb=FMath::FRandRange(0,AiArrayRandLength);
+	int PreviousNb = 0;
+	for(int i=0;i<Ai.Num();i++)
+	{
+		int CurrentNb=PreviousNb+(i-Ai.Num());
+		if(RandomNb<=CurrentNb||RandomNb>=PreviousNb)
+		{
+			AiIndex=i;
+			break;
+		}
+	}
+	return Ai[AiIndex];
+}
+
+bool AGM_TestGameMood::SetAiArrayRandLength()
+{
+	if(Ai.IsEmpty()){return false;}
+	int TotalNb = 0;
+	for(int i=0;i<Ai.Num();i++)
+	{
+		TotalNb=TotalNb+(i-Ai.Num());
+	}
+	AiArrayRandLength=TotalNb;
+	return true;
 }
 
