@@ -61,7 +61,7 @@ void AABP_Recohet_Arrorw::Bouncing()
 	TArray<AActor*> OutActors;
 	float ClosetActorDistance;
 	UGameplayStatics::GetAllActorsOfClass(this,AiParent,OutActors);
-	AActor* ClosetActor=UGameplayStatics::FindNearestActor(FVector::Zero(),OutActors,ClosetActorDistance);
+	AActor* ClosetActor=UGameplayStatics::FindNearestActor(GetActorLocation(),OutActors,ClosetActorDistance);
 	FRotator ActorRotation=UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),ClosetActor->GetActorLocation());
 	FVector VelocityCalculation=UKismetMathLibrary::GetForwardVector(ActorRotation)*ProjectileVelocitySpeed;
 	ProjectileMovementComponent->Velocity=VelocityCalculation;

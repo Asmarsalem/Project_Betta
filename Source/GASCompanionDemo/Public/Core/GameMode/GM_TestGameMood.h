@@ -25,15 +25,14 @@ public:
 	 */
 	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Init | Vars")
 	TArray<TSubclassOf<APawn>> Ai;
-	UPROPERTY()
-	int AiArrayRandLength;
+
 	UPROPERTY()
 	UTimelineComponent* MyTimeline;
 	/*
 	 * Init Func
 	 */
 	UFUNCTION(Category="Init | Funcs")
-	bool SetAiArrayRandLength();
+	float SetAiArrayRandLength(float CurrentLevel);
 	
 	// Wave System
 	UFUNCTION(BlueprintCallable,Category="WaveSystem",meta=(Tooltip="Start New Wave Based On Curve Float"))
@@ -64,7 +63,7 @@ public:
 	void SpawnAiRef();
 
 	UFUNCTION(BlueprintPure ,Category="WaveSystem")
-	TSubclassOf<APawn> GetRandomAi();
+	TSubclassOf<APawn> GetRandomAi(UAbilitySystemComponent* Gas);
 
 
 };
