@@ -11,5 +11,8 @@ public class GASCompanionDemoTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 
 		ExtraModuleNames.AddRange( new string[] { "GASCompanionDemo" } );
+
+		
+
 	}
 }

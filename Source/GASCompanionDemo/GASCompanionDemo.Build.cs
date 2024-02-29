@@ -8,13 +8,18 @@ public class GASCompanionDemo : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] {"NavigationSystem", "Core", "CoreUObject", "Engine", "InputCore","GASCompanion","TestGFRuntime","PlayFab","HTTP"});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"GASCompanion",
 			"GameplayTags",
-			"GameplayAbilities"
+			"GameplayAbilities",
+			"PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime","FirebaseFeatures"
 		});
+		// Here is where you should set these flags
+		bUseAVX = true;
+		bEnableExceptions = true;
 	}
+
 }

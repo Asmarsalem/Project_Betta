@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Mickael Daniel. All Rights Reserved.
+ // Copyright 2021-2022 Mickael Daniel. All Rights Reserved.
 
 
 #include "MainAttributes.h"
@@ -101,6 +101,8 @@ void UMainAttributes::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
      DOREPLIFETIME_CONDITION_NOTIFY(UMainAttributes,Gold,COND_None,REPNOTIFY_Always)
      
     DOREPLIFETIME_CONDITION_NOTIFY(UMainAttributes,Gems,COND_None,REPNOTIFY_Always)
+
+    DOREPLIFETIME_CONDITION_NOTIFY(UMainAttributes,KnockBack,COND_None,REPNOTIFY_Always)
     
     
     
@@ -219,6 +221,11 @@ void UMainAttributes::OnRep_Gold(const FGameplayAttributeData& OldGold)
 void UMainAttributes::OnRep_Gems(const FGameplayAttributeData& OldGems)
 {
         GAMEPLAYATTRIBUTE_REPNOTIFY(UMainAttributes,Gems,OldGems)
+}
+
+void UMainAttributes::OnRep_KnockBack(const FGameplayAttributeData& OldKnockBack)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UMainAttributes,KnockBack,OldKnockBack)
 }
 
 
