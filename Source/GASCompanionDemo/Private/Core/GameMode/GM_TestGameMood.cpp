@@ -23,7 +23,7 @@ void AGM_TestGameMood::BeginPlay()
 	{
 		if (IsValid(this))
 		{
-			SpawnAiRef();
+			SpawnAiHandle();
 		}
 	});
 	GetWorld()->GetTimerManager().SetTimer(timeh,Timerd,1.5f,true);

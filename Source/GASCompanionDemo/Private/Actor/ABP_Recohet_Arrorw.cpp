@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetArrayLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -36,8 +37,9 @@ void AABP_Recohet_Arrorw::BeginPlay()
 void AABP_Recohet_Arrorw::OnComponentBeginOvelarp(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	/*if( OtherActor && OtherActor != GetInstigator())
-	{Bouncing();
+	/*
+	if( OtherActor && OtherActor != GetInstigator())
+	{
 		if(IAbilitySystemInterface* AbilitySystemInterface=Cast<IAbilitySystemInterface>(OtherActor->GetInstigator()))
 		{
 			UAbilitySystemComponent* AbilitySystemComponent=Cast<UAbilitySystemComponent>(AbilitySystemInterface->GetAbilitySystemComponent());
@@ -51,7 +53,7 @@ void AABP_Recohet_Arrorw::OnComponentBeginOvelarp(UPrimitiveComponent* Overlappe
 	}*/
 }
 
-void AABP_Recohet_Arrorw::Bouncing()
+void AABP_Recohet_Arrorw::Bouncing(AActor* HitActor)
 {
 	if(CurrentIndex>MaxIndex)
 	{
@@ -61,10 +63,20 @@ void AABP_Recohet_Arrorw::Bouncing()
 	TArray<AActor*> OutActors;
 	float ClosetActorDistance;
 	UGameplayStatics::GetAllActorsOfClass(this,AiParent,OutActors);
+	if(OutActors.Contains(HitActor))
+	{
+		OutActors.RemoveAt(OutActors.Find(HitActor));
+	}
+	for (AActor* HitedActor:HitedActors)
+	{
+		OutActors.Remove(HitedActor);
+	}
 	AActor* ClosetActor=UGameplayStatics::FindNearestActor(GetActorLocation(),OutActors,ClosetActorDistance);
+	
 	FRotator ActorRotation=UKismetMathLibrary::FindLookAtRotation(GetActorLocation(),ClosetActor->GetActorLocation());
 	FVector VelocityCalculation=UKismetMathLibrary::GetForwardVector(ActorRotation)*ProjectileVelocitySpeed;
 	ProjectileMovementComponent->Velocity=VelocityCalculation;
+	HitedActors.Add(HitActor);
 }
 
 

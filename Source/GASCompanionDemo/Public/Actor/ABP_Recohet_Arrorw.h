@@ -43,6 +43,8 @@ public:
 	float ProjectileVelocitySpeed;
 	UPROPERTY()
 	int CurrentIndex;
+	UPROPERTY()
+	TArray<AActor*> HitedActors;
 
 	UPROPERTY(EditDefaultsOnly,BlueprintReadOnly, Category="GAS | GameplayEffect")
 	TSubclassOf<UGameplayEffect> GameplayEffect;
@@ -51,6 +53,6 @@ public:
 	UFUNCTION()
 	void OnComponentBeginOvelarp(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
 	UFUNCTION(BlueprintCallable, Category="Components | ProjectileMovementComponent | Func")
-	void Bouncing();
+	void Bouncing(AActor* HitActor);
 	
 };

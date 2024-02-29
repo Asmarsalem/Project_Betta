@@ -59,8 +59,8 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	FTimerHandle timeh;
-	UFUNCTION(BlueprintImplementableEvent)
-	void SpawnAiRef();
+	UFUNCTION(BlueprintImplementableEvent,Category="SpawnSystemV2 | ImplementableEvents")
+	void SpawnAiHandle();
 
 	UFUNCTION(BlueprintPure ,Category="WaveSystem")
 	TSubclassOf<APawn> GetRandomAi(UAbilitySystemComponent* Gas);
