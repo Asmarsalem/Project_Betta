@@ -18,7 +18,8 @@ public class GASCompanion : ModuleRules
 			"UMG",
 			"GameplayAbilities",
 			"GameFeatures",
-			"EnhancedInput"
+			"EnhancedInput",
+			"GASCompanionDemo"
 		});
 
 		// ... add private dependencies that you statically link with here ...
@@ -31,8 +32,8 @@ public class GASCompanion : ModuleRules
 			"SlateCore",
 			"DeveloperSettings",
 			"ModularGameplay",
-			"NetCore",
-			"GASCompanionDemo" // For OSx
+			"NetCore" ,
+			// For OSx
 		});
 
 		if (Target.bBuildEditor == true)

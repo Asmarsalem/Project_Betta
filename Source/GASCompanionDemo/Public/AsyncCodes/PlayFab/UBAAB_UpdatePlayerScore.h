@@ -17,7 +17,7 @@ class GASCOMPANIONDEMO_API UUBAAB_UpdatePlayerScore : public UBlueprintAsyncActi
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable,meta=(BlueprintInternalUseOnly))
-	static UUBAAB_UpdatePlayerScore* UpdatePlayerScore(float Score);
+	static UUBAAB_UpdatePlayerScore* UpdatePlayerScore(UAbilitySystemComponent* Ability);
 private:
 	virtual void Activate() override;
 	UPROPERTY(BlueprintAssignable)

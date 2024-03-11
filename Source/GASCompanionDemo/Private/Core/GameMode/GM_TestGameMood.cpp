@@ -7,9 +7,38 @@
 
 #include "core/GameMode/GM_TestGameMood.h"
 
+#include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
+#include "GlobalMacro.h"
+#include "NavigationSystem.h"
+#include "Attributes/XPAttributeSet.h"
 #include "Components/TimelineComponent.h"
+#include "Engine/CurveTable.h"
+#include "Engine/DataTable.h"
+#include "Kismet/GameplayStatics.h"
 float timeLinePreviousValue;
 bool reverse;
+
+void AGM_TestGameMood::BeginPlay()
+{
+	Super::BeginPlay();
+	FTimerDelegate Timerd=FTimerDelegate::CreateLambda([this]()
+	{
+		if (IsValid(this))
+		{
+			SpawnAiRef();
+		}
+	});
+	GetWorld()->GetTimerManager().SetTimer(timeh,Timerd,1.5f,true);
+}
+
+void AGM_TestGameMood::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	// Clear Timer Instance
+	GetWorld()->GetTimerManager().ClearTimer(timeh);
+}
+
 void AGM_TestGameMood::startNewWave(UCurveFloat* CurveFloat)
 {
 	reverse=false;
@@ -59,3 +88,75 @@ void AGM_TestGameMood::onFloatTrackUpdate(float value)
 	// Update timeLinePreviousValue Value
 	timeLinePreviousValue=value;
 }
+
+	FVector AGM_TestGameMood::GetRandomReachableLocation(TSubclassOf<AActor> PlayerCharacter,bool& Success)
+{
+	// init Local Vars
+	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+	AActor* OutActors;
+	FNavLocation ProjectedLocation;
+	// Get All Actor Ref  
+	OutActors=UGameplayStatics::GetActorOfClass(this,PlayerCharacter);
+	// Get First Actor
+	FVector PlayerLocation = OutActors->GetActorLocation();
+	PlayerLocation.Z=300.f;
+	if(!NavSys || !OutActors ){Success=false; return FVector::ZeroVector;}
+	// Add the Spawn Points To Array
+	TArray<FVector> PlayerLocationArray{FVector(PlayerLocation.X-3000.f,PlayerLocation.Y-1500.f,PlayerLocation.Z),
+		FVector(PlayerLocation.X-3000.f,PlayerLocation.Y+1500.f,PlayerLocation.Z),
+		FVector(PlayerLocation.X+3000,PlayerLocation.Y+1500.f,PlayerLocation.Z),
+		FVector(PlayerLocation.X+3000.f,PlayerLocation.Y-1500.f,PlayerLocation.Z),
+		FVector(PlayerLocation.X+3000.f,PlayerLocation.Y,PlayerLocation.Z),
+		FVector(PlayerLocation.X-3000.f,PlayerLocation.Y,PlayerLocation.Z),
+		FVector(PlayerLocation.X,PlayerLocation.Y+3000.f,PlayerLocation.Z),
+		FVector(PlayerLocation.X,PlayerLocation.Y-3000.f,PlayerLocation.Z)
+	};
+	// Shuffle The Array
+	if (PlayerLocationArray.Num() > 0)
+	{
+		for (int32 Index = 0; Index < PlayerLocationArray.Num() - 1; ++Index)
+		{
+			int32 RandomIndex = FMath::RandRange(Index, PlayerLocationArray.Num() - 1);
+			if (RandomIndex != Index)
+			{
+				PlayerLocationArray.Swap(Index, RandomIndex);
+			};
+		};
+	};
+	// Check The Points If Valid In the Array 
+	for(FVector PlayerLocationArrayRef : PlayerLocationArray)
+	{
+		if(NavSys->ProjectPointToNavigation(PlayerLocationArrayRef, ProjectedLocation, FVector::ZeroVector))
+		{
+			// valid Location
+			Success=true;
+			return PlayerLocationArrayRef;
+		}
+	}
+	// Invalid Location
+	Success=false;
+	return FVector::ZeroVector;
+}
+
+bool AGM_TestGameMood::GetCurve(TSubclassOf<AActor> ArrayType,UCurveTable* Table,UAbilitySystemComponent* Ability)
+{
+	if (!Table || !Ability) return 0.0f;
+		FName RowName = FName(TEXT("General"));
+		static const FString ContextString(TEXT("LookupCurveValue"));
+
+		// Assuming you want to get a FRichCurve from the UCurveTable
+		FRealCurve* Curve = Table->FindCurve(RowName, ContextString, true);
+
+		if (Curve)
+		{
+			TArray<AActor*> OutActor;
+			UGameplayStatics::GetAllActorsOfClass(this,ArrayType,OutActor);
+			int32 AbilityLevel=Ability->GetNumericAttribute(UXPAttributeSet::GetLevelAttribute());
+			int CurveValue=Curve->Eval(FMath::Clamp(AbilityLevel,0,	Curve->GetNumKeys()));
+			if(OutActor.Num() <= CurveValue){return true;};
+			
+
+		}
+	return false;
+}
+
