@@ -1,0 +1,3 @@
+To insert the table correctly, you have to add Create the Skill Tree of Character in the following syntax: "DT_$CharacterName$SkillTree
+
+Remark: Each Word Between Two $ Indicates a Modifiable Word

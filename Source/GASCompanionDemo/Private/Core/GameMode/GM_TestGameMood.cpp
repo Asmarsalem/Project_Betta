@@ -6,7 +6,6 @@
 
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"
 #include "NavigationSystem.h"
 #include "Attributes/XPAttributeSet.h"
 #include "Components/TimelineComponent.h"
@@ -168,15 +167,15 @@ TSubclassOf<APawn> AGM_TestGameMood::GetRandomAi(UAbilitySystemComponent* Gas)
 	}
 	int AiIndex = 0;
 	const float RandomNb=UKismetMathLibrary::RandomFloatInRange(0,SetAiArrayRandLength(CurrentLevel));
-	UE_LOG(LogTemp,Error,TEXT("RandomNb:%f"),RandomNb);
+	/*UE_LOG(LogTemp,Error,TEXT("RandomNb:%f"),RandomNb);*/
 	float CurrentNb = 0;
 	float PreviousNb=0;
 	for(float i=0;i<Ai.Num();i++)
 	{
 		 CurrentNb=(CurrentNb+(UKismetMathLibrary::Conv_IntToFloat(Ai.Num())-i))+CurrentLevel;
-			UE_LOG(LogTemp,Error,TEXT("CurrentNb:%f"),CurrentNb);
+			/*UE_LOG(LogTemp,Error,TEXT("CurrentNb:%f"),CurrentNb);*/
 		if(PreviousNb>RandomNb&&RandomNb<CurrentNb)
-		{UE_LOG(LogTemp,Error,TEXT("index:%f"),i);
+		{/*UE_LOG(LogTemp,Error,TEXT("index:%f"),i);*/
 			AiIndex=i;
 			break;
 		}
@@ -195,7 +194,7 @@ float AGM_TestGameMood::SetAiArrayRandLength(float CurrentLevel)
 	{
 		TotalNb=(TotalNb+(UKismetMathLibrary::Conv_IntToFloat(Ai.Num())-i))+CurrentLevel;
 	}
-	UE_LOG(LogTemp,Error,TEXT("TotalNb:%f"),TotalNb);
+	/*UE_LOG(LogTemp,Error,TEXT("TotalNb:%f"),TotalNb);*/
 	return TotalNb;
 }
 
