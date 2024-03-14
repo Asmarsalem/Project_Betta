@@ -16,4 +16,11 @@ class GASCOMPANIONDEMO_API UUBFL_GlobalFunc : public UBlueprintFunctionLibrary
 public:
 	UFUNCTION(BlueprintCallable,Category="Custom_Global_Func")
 	static void RestartTheCurentLevel(const UObject* WorldContextObject);
+	/*
+	 * String Funcs
+	 */
+	UFUNCTION(BlueprintPure,Category="Custom_Global_Func | String")
+	static FString  RemoveFromEnd(FString Input,FString InPrefix);
+	UFUNCTION(BlueprintPure,Category="Custom_Global_Func | String")
+	static FString  RemoveFromStart(FString Input,FString InPrefix);
 };

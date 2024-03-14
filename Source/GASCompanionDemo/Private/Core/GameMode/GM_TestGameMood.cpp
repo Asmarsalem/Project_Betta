@@ -5,17 +5,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "core/GameMode/GM_TestGameMood.h"
-
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"
-#include "GlobalMacro.h"
 #include "NavigationSystem.h"
 #include "Attributes/XPAttributeSet.h"
 #include "Components/TimelineComponent.h"
 #include "Engine/CurveTable.h"
-#include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 float timeLinePreviousValue;
 bool reverse;
 
@@ -26,7 +22,7 @@ void AGM_TestGameMood::BeginPlay()
 	{
 		if (IsValid(this))
 		{
-			SpawnAiRef();
+			SpawnAiHandle();
 		}
 	});
 	GetWorld()->GetTimerManager().SetTimer(timeh,Timerd,1.5f,true);
@@ -158,5 +154,47 @@ bool AGM_TestGameMood::GetCurve(TSubclassOf<AActor> ArrayType,UCurveTable* Table
 
 		}
 	return false;
+}
+
+TSubclassOf<APawn> AGM_TestGameMood::GetRandomAi(UAbilitySystemComponent* Gas)
+{
+	float CurrentLevel = 0;
+	if(Ai.IsEmpty()){return nullptr;}
+	
+	if(Gas)
+	{
+		CurrentLevel = Gas->GetNumericAttribute(UXPAttributeSet::GetLevelAttribute())/10;
+	}
+	int AiIndex = 0;
+	const float RandomNb=UKismetMathLibrary::RandomFloatInRange(0,SetAiArrayRandLength(CurrentLevel));
+	/*UE_LOG(LogTemp,Error,TEXT("RandomNb:%f"),RandomNb);*/
+	float CurrentNb = 0;
+	float PreviousNb=0;
+	for(float i=0;i<Ai.Num();i++)
+	{
+		 CurrentNb=(CurrentNb+(UKismetMathLibrary::Conv_IntToFloat(Ai.Num())-i))+CurrentLevel;
+			/*UE_LOG(LogTemp,Error,TEXT("CurrentNb:%f"),CurrentNb);*/
+		if(PreviousNb>RandomNb&&RandomNb<CurrentNb)
+		{/*UE_LOG(LogTemp,Error,TEXT("index:%f"),i);*/
+			AiIndex=i;
+			break;
+		}
+		PreviousNb=CurrentNb;
+	}
+	return Ai[AiIndex];
+}
+
+float AGM_TestGameMood::SetAiArrayRandLength(float CurrentLevel)
+{
+
+	
+	if(Ai.IsEmpty()){return false;}
+	float TotalNb = 0;
+	for(float i=0;i<Ai.Num();i++)
+	{
+		TotalNb=(TotalNb+(UKismetMathLibrary::Conv_IntToFloat(Ai.Num())-i))+CurrentLevel;
+	}
+	/*UE_LOG(LogTemp,Error,TEXT("TotalNb:%f"),TotalNb);*/
+	return TotalNb;
 }
 

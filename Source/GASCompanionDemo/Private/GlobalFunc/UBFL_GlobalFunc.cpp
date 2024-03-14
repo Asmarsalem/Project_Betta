@@ -9,3 +9,15 @@ void UUBFL_GlobalFunc::RestartTheCurentLevel(const UObject* WorldContextObject)
 {
 	UGameplayStatics::OpenLevel(WorldContextObject,FName(UGameplayStatics::GetCurrentLevelName(WorldContextObject,true)),true);
 }
+
+FString UUBFL_GlobalFunc::RemoveFromEnd(FString Input,FString InPrefix)
+{
+	Input.RemoveFromEnd(InPrefix);
+	return Input;
+}
+
+FString UUBFL_GlobalFunc::RemoveFromStart(FString Input,FString InPrefix)
+{
+	Input.RemoveFromStart(InPrefix);
+	return Input;
+}
