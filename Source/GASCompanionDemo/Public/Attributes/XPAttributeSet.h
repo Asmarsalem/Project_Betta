@@ -51,7 +51,7 @@ public:
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, MovementSpeedLevel)    
     
     UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Properties", ReplicatedUsing = OnRep_AttackSpeed)
-    FGameplayAttributeData AttackSpeedLevel = 5.0f;
+    FGameplayAttributeData AttackSpeedLevel = 1.f;
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, AttackSpeedLevel)    
     
     UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Properties", ReplicatedUsing = OnRep_IncreaseDamage)
