@@ -15,7 +15,7 @@ public class GASCompanionDemo : ModuleRules
 			"GASCompanion",
 			"GameplayTags",
 			"GameplayAbilities",
-			"PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime","FirebaseFeatures"
+			"PlayFab", "PlayFabCpp", "PlayFabCommon", "TestGFRuntime","FirebaseFeatures", "ChunkDownloader"
 		});
 		// Here is where you should set these flags
 		bUseAVX = true;
