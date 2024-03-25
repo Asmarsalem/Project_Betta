@@ -70,6 +70,14 @@ void UXPAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
     DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet, IncreaseMaxHpLevel, COND_None, REPNOTIFY_Always);
     
     DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet, IncreaseHealthRegenLevel, COND_None, REPNOTIFY_Always);
+
+    DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet,lightingLevel,COND_None,REPNOTIFY_Always);
+    
+    DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet, lighting, COND_None, REPNOTIFY_Always);
+    
+    DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet, PoisonLevel, COND_None, REPNOTIFY_Always);
+
+    DOREPLIFETIME_CONDITION_NOTIFY(UXPAttributeSet,Poison,COND_None,REPNOTIFY_Always);
     
 }
 
@@ -156,4 +164,24 @@ void UXPAttributeSet::OnRep_IncreaseMaxHp(const FGameplayAttributeData& OldIncre
 void UXPAttributeSet::OnRep_IncreaseHealthRegen(const FGameplayAttributeData& OldIncreaseHealthRegen)
 {
     GAMEPLAYATTRIBUTE_REPNOTIFY(UXPAttributeSet,IncreaseHealthRegenLevel,OldIncreaseHealthRegen);
+}
+
+void UXPAttributeSet::OnRep_lightingLevel(const FGameplayAttributeData& OldlightingLevel)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UXPAttributeSet,lightingLevel,OldlightingLevel);
+}
+
+void UXPAttributeSet::OnRep_lighting(const FGameplayAttributeData& Oldlighting)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UXPAttributeSet,lightingLevel,Oldlighting);
+}
+
+void UXPAttributeSet::OnRep_PoisonLevel(const FGameplayAttributeData& OldPoisonLevel)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UXPAttributeSet,PoisonLevel,OldPoisonLevel);
+}
+
+void UXPAttributeSet::OnRep_Poison(const FGameplayAttributeData& OldPoison)
+{
+    GAMEPLAYATTRIBUTE_REPNOTIFY(UXPAttributeSet,Poison,OldPoison);
 }

@@ -20,13 +20,24 @@ public:
 	// override default Func
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
+	/*
+	 * Init Vars
+	 */
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite,Category="Init | Vars")
+	TArray<TSubclassOf<APawn>> Ai;
+
 	UPROPERTY()
 	UTimelineComponent* MyTimeline;
+	/*
+	 * Init Func
+	 */
+	UFUNCTION(Category="Init | Funcs")
+	float SetAiArrayRandLength(float CurrentLevel);
 	
 	// Wave System
 	UFUNCTION(BlueprintCallable,Category="WaveSystem",meta=(Tooltip="Start New Wave Based On Curve Float"))
 	void startNewWave(UCurveFloat* CurveFloat);
+	
 	// Blue Print Implementable Funcs
 	UFUNCTION()
 	void onFloatTrackUpdate(float value);
@@ -34,9 +45,12 @@ public:
 	void onTimeLineFinished();
 	UFUNCTION(BlueprintImplementableEvent,Category="WaveSystem")
 	void OnTimelineEvent(float value);
+	/*
+	 *	Gas
+	 */
 	UPROPERTY(BlueprintAssignable)
 	FAttributeChangeSignature onAttributeChange;
-
+		
 	UFUNCTION(BlueprintPure)
 	FVector GetRandomReachableLocation(TSubclassOf<AActor> PlayerLocation,bool& Success);
 	
@@ -45,7 +59,11 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadOnly)
 	FTimerHandle timeh;
-	UFUNCTION(BlueprintImplementableEvent)
-	void SpawnAiRef();
-	
+	UFUNCTION(BlueprintImplementableEvent,Category="SpawnSystemV2 | ImplementableEvents")
+	void SpawnAiHandle();
+
+	UFUNCTION(BlueprintPure ,Category="WaveSystem")
+	TSubclassOf<APawn> GetRandomAi(UAbilitySystemComponent* Gas);
+
+
 };

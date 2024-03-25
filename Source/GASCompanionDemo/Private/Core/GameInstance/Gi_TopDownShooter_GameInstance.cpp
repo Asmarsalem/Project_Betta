@@ -4,19 +4,16 @@
 #include "Core/GameInstance/Gi_TopDownShooter_GameInstance.h"
 
 #include "GlobalMacro.h"
-#include "GenericPlatform/HttpRequestImpl.h"
 #include "PlayFab/Classes/PlayFabClientModels.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "Windows/WindowsPlatformProcess.h"
 #include "PlayFab/Classes/PlayFabClientAPI.h"
 #if PLATFORM_WINDOWS
 #include "Windows/AllowWindowsPlatformTypes.h"
-#include <windows.h>
-#include "Windows/HideWindowsPlatformTypes.h"
 #endif
 
 void UGi_TopDownShooter_GameInstance::Login(FString CustomId)
 {
+#if PLATFORM_WINDOWS
 	FClientLoginWithCustomIDRequest Request;
 	Request.CreateAccount=true;
 	Request.CustomId=CustomId;
@@ -27,6 +24,7 @@ void UGi_TopDownShooter_GameInstance::Login(FString CustomId)
 	Error.BindUFunction(this,FName("OnLoginFailure"));
 	
 	UPlayFabClientAPI::LoginWithCustomID(Request,LoginSuccess,Error,nullptr);
+#endif
 }
 
 void UGi_TopDownShooter_GameInstance::OnLoginSuccess(FClientLoginResult result, UObject* customData)
@@ -67,6 +65,7 @@ FString UGi_TopDownShooter_GameInstance::GetWindowsDeviceID()
 
 void UGi_TopDownShooter_GameInstance::CheckInternetConnection(FCheckInternetConnection GetResponse)
 {
+#if PLATFORM_WINDOWS
 	FHttpModule& HttpModule  = FHttpModule::Get();
 	const TSharedRef<IHttpRequest> HttpRequest = HttpModule.CreateRequest();
 	HttpRequest->SetVerb("Get");
@@ -76,8 +75,7 @@ void UGi_TopDownShooter_GameInstance::CheckInternetConnection(FCheckInternetConn
 		GetResponse.ExecuteIfBound(bConnectedSuccessfully);
 	});
 	HttpRequest->ProcessRequest();
-	
-	
+#endif
 }
 
 

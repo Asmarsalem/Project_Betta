@@ -38,7 +38,7 @@ public:
 	FGameplayAttributeData xp=100;
 	ATTRIBUTE_ACCESSORS(UXPAttributeSet, xp);
 	
-	    UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Propertie", ReplicatedUsing = OnRep_Stun)
+	UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Propertie", ReplicatedUsing = OnRep_Stun)
     FGameplayAttributeData StunLevel = 0.0;
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, StunLevel)    
     
@@ -51,7 +51,7 @@ public:
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, MovementSpeedLevel)    
     
     UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Properties", ReplicatedUsing = OnRep_AttackSpeed)
-    FGameplayAttributeData AttackSpeedLevel = 5.0f;
+    FGameplayAttributeData AttackSpeedLevel = 1.f;
     ATTRIBUTE_ACCESSORS(UXPAttributeSet, AttackSpeedLevel)    
     
     UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Properties", ReplicatedUsing = OnRep_IncreaseDamage)
@@ -76,7 +76,23 @@ public:
     
     UPROPERTY(BlueprintReadOnly, Category = "Upgrades_Properties", ReplicatedUsing = OnRep_IncreaseHealthRegen)
     FGameplayAttributeData IncreaseHealthRegenLevel = 0.0;
-    ATTRIBUTE_ACCESSORS(UXPAttributeSet, IncreaseHealthRegenLevel)    
+    ATTRIBUTE_ACCESSORS(UXPAttributeSet, IncreaseHealthRegenLevel)
+
+	UPROPERTY(BlueprintReadOnly,Category="Upgrades_Properties", ReplicatedUsing= OnRep_lightingLevel)
+	FGameplayAttributeData lightingLevel=0.0;
+	ATTRIBUTE_ACCESSORS(UXPAttributeSet,lightingLevel)
+
+	UPROPERTY(BlueprintReadOnly,Category="Upgrades_Properties", ReplicatedUsing= OnRep_lighting)
+	FGameplayAttributeData lighting=0.0;
+	ATTRIBUTE_ACCESSORS(UXPAttributeSet,lighting)
+	
+	UPROPERTY(BlueprintReadOnly,Category="Upgrades_Properties", ReplicatedUsing= OnRep_PoisonLevel)
+	FGameplayAttributeData PoisonLevel=0.0;
+	ATTRIBUTE_ACCESSORS(UXPAttributeSet,PoisonLevel)
+
+	UPROPERTY(BlueprintReadOnly,Category="Upgrades_Properties", ReplicatedUsing= OnRep_Poison)
+	FGameplayAttributeData Poison=0.0;
+	ATTRIBUTE_ACCESSORS(UXPAttributeSet,Poison)
 protected:
 	
     UFUNCTION()
@@ -120,4 +136,16 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_IncreaseHealthRegen(const FGameplayAttributeData& OldIncreaseHealthRegen);
+
+	UFUNCTION()
+	virtual void OnRep_lightingLevel(const FGameplayAttributeData& OldlightingLevel);
+
+	UFUNCTION()
+	virtual void OnRep_lighting(const FGameplayAttributeData& Oldlighting);
+	
+	UFUNCTION()
+	virtual void OnRep_PoisonLevel(const FGameplayAttributeData& OldPoisonLevel);
+
+	UFUNCTION()
+	virtual void OnRep_Poison(const FGameplayAttributeData& OldPoison);
 };

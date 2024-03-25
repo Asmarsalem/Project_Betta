@@ -1,0 +1,30 @@
+Skill Tree:
+keep in mind:
+1-We have 3 charcters
+2-Most Of the Upgrades are common
+
+Req:
+Evilios:
+{
+	Ricochet:{
+ 	Icon,Upgrade Effect,Attribute
+	}
+	Multiple Arrows:{
+ 	Icon,Upgrade Effect,Attribute
+	}
+}
+Warzog:
+{
+	ConeDamage:{
+ 	Icon,Upgrade Effect,Attribute
+	}
+}
+Mage:
+{
+	FireSlash:{
+ 	Icon,Upgrade Effect,Attribute
+	}
+	MineField:{
+ 	Icon,Upgrade Effect,Attribute
+	}
+}
