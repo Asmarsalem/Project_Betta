@@ -8,7 +8,7 @@ public class GASCompanionDemo : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] {"NavigationSystem", "Core", "CoreUObject", "Engine", "InputCore","GASCompanion","TestGFRuntime","PlayFab","HTTP"});
+		PublicDependencyModuleNames.AddRange(new string[] {"NavigationSystem", "Core", "CoreUObject", "Engine", "InputCore","GASCompanion","TestGFRuntime","PlayFab","HTTP", "AssetRegistry"});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{

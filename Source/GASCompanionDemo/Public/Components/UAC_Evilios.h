@@ -12,11 +12,7 @@ UCLASS(ClassGroup=(Character), meta=(BlueprintSpawnableComponent))
 class GASCOMPANIONDEMO_API UUAC_Evilios : public UActorComponent
 {
 	GENERATED_BODY()
-
-public:
-	// Sets default values for this component's properties
-	UUAC_Evilios();
-
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
