@@ -80,7 +80,7 @@
 		},
 		{
 			"Name": "FirebaseFeatures",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/81111c9d88144ab0968fd8953872a3d8"
 		},
 		{
